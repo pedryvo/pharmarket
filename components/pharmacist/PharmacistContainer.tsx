@@ -194,33 +194,33 @@ export const PharmacistContainer = ({ currentUser, initialOrders }: PharmacistCo
 
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <Card className="p-6 bg-white border-vitalab-border shadow-vitalab-sm hover:border-vitalab-orange/30 transition-all">
-            <div className="flex items-center gap-3 text-vitalab-orange mb-2">
-              <Clock size={16} />
-              <span className="text-[0.6rem] font-black uppercase tracking-widest">Em revisão</span>
+          <Card className="p-4 bg-white border-vitalab-border shadow-vitalab-sm hover:border-vitalab-orange/30 transition-all">
+            <div className="flex items-center gap-3 text-vitalab-orange mb-1.5">
+              <Clock size={14} />
+              <span className="text-[0.55rem] font-black uppercase tracking-widest">Em revisão</span>
             </div>
-            <div className="text-2xl font-black text-vitalab-text">{stats.pending}</div>
+            <div className="text-xl font-black text-vitalab-text">{stats.pending}</div>
           </Card>
-          <Card className="p-6 bg-white border-vitalab-border shadow-vitalab-sm hover:border-blue-500/30 transition-all">
-            <div className="flex items-center gap-3 text-blue-500 mb-2">
-              <RotateCcw size={16} />
-              <span className="text-[0.6rem] font-black uppercase tracking-widest">Ajuste Solicitado</span>
+          <Card className="p-4 bg-white border-vitalab-border shadow-vitalab-sm hover:border-blue-500/30 transition-all">
+            <div className="flex items-center gap-3 text-blue-500 mb-1.5">
+              <RotateCcw size={14} />
+              <span className="text-[0.55rem] font-black uppercase tracking-widest">Ajuste Solicitado</span>
             </div>
-            <div className="text-2xl font-black text-vitalab-text">{stats.revised}</div>
+            <div className="text-xl font-black text-vitalab-text">{stats.revised}</div>
           </Card>
-          <Card className="p-6 bg-white border-vitalab-border shadow-vitalab-sm hover:border-vitalab-green/30 transition-all">
-            <div className="flex items-center gap-3 text-vitalab-green mb-2">
-              <CheckCircle2 size={16} />
-              <span className="text-[0.6rem] font-black uppercase tracking-widest">Aprovados</span>
+          <Card className="p-4 bg-white border-vitalab-border shadow-vitalab-sm hover:border-vitalab-green/30 transition-all">
+            <div className="flex items-center gap-3 text-vitalab-green mb-1.5">
+              <CheckCircle2 size={14} />
+              <span className="text-[0.55rem] font-black uppercase tracking-widest">Aprovados</span>
             </div>
-            <div className="text-2xl font-black text-vitalab-text">{stats.approved}</div>
+            <div className="text-xl font-black text-vitalab-text">{stats.approved}</div>
           </Card>
-          <Card className="p-6 bg-white border-vitalab-border shadow-vitalab-sm hover:border-vitalab-green-text/30 transition-all">
-            <div className="flex items-center gap-3 text-vitalab-green-text mb-2">
-              <DollarSign size={16} />
-              <span className="text-[0.6rem] font-black uppercase tracking-widest">Faturamento</span>
+          <Card className="p-4 bg-white border-vitalab-border shadow-vitalab-sm hover:border-vitalab-green-text/30 transition-all">
+            <div className="flex items-center gap-3 text-vitalab-green-text mb-1.5">
+              <DollarSign size={14} />
+              <span className="text-[0.55rem] font-black uppercase tracking-widest">Faturamento</span>
             </div>
-            <div className="text-2xl font-black text-vitalab-text">{fBRL(stats.billing)}</div>
+            <div className="text-xl font-black text-vitalab-text">{fBRL(stats.billing)}</div>
           </Card>
         </div>
 
@@ -229,20 +229,20 @@ export const PharmacistContainer = ({ currentUser, initialOrders }: PharmacistCo
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {/* Waiting Review Container */}
               <Card className="flex flex-col bg-white border-vitalab-border shadow-vitalab-md overflow-hidden min-h-[600px]">
-                <div className="p-5 border-b border-vitalab-border bg-vitalab-bg/50 flex justify-between items-center">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-vitalab-orange/10 flex items-center justify-center text-vitalab-orange">
-                      <Clock size={18} />
-                    </div>
-                    <div>
-                      <h2 className="text-[0.85rem] font-black text-vitalab-text uppercase tracking-wider">Aguardando Revisão</h2>
-                      <p className="text-[0.65rem] text-vitalab-text-secondary font-medium">Pedidos pendentes de análise técnica</p>
-                    </div>
+              <div className="p-4 border-b border-vitalab-border bg-vitalab-bg/50 flex justify-between items-center">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-lg bg-vitalab-orange/10 flex items-center justify-center text-vitalab-orange">
+                    <Clock size={16} />
                   </div>
-                  <Badge className="bg-vitalab-orange text-white font-black text-[0.65rem] rounded-full px-2 py-0.5">
-                    {pendingOrders.length}
-                  </Badge>
+                  <div>
+                    <h2 className="text-[0.75rem] font-black text-vitalab-text uppercase tracking-wider">Aguardando Revisão</h2>
+                    <p className="text-[0.6rem] text-vitalab-text-secondary font-medium">Pedidos pendentes de análise técnica</p>
+                  </div>
                 </div>
+                <Badge className="bg-vitalab-orange text-white font-black text-[0.65rem] rounded-full px-2 py-0.5">
+                  {pendingOrders.length}
+                </Badge>
+              </div>
 
                 <StrictModeDroppable droppableId="REVIEW">
                   {(provided) => (

@@ -2,11 +2,23 @@ import prisma from '@/lib/db'
 import { Prisma } from '@prisma/client'
 
 export class PartnerRepository {
+  static async findAll() {
+    return prisma.partner.findMany({
+      include: {
+        pharmacist: {
+          select: { name: true, email: true }
+        }
+      }
+    })
+  }
+
   static async findAllActive() {
     return prisma.partner.findMany({
       where: { active: true },
       include: {
-        pharmacist: true
+        pharmacist: {
+          select: { name: true, email: true }
+        }
       }
     })
   }
@@ -28,6 +40,12 @@ export class PartnerRepository {
     return prisma.partner.update({
       where: { id },
       data
+    })
+  }
+
+  static async delete(id: number) {
+    return prisma.partner.delete({
+      where: { id }
     })
   }
 }

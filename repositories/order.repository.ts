@@ -22,27 +22,26 @@ export class OrderRepository {
     })
   }
 
-  static async findAllByClient(clientUsername: string) {
+  static async findAllByClient(clientEmail: string) {
     return prisma.order.findMany({
-      where: { clientUsername },
-      orderBy: { date: 'desc' },
-      include: {
-        items: true
-      }
+      where: { clientEmail },
+      include: { items: true, partner: true },
+      orderBy: { date: 'desc' }
     })
   }
 
-  static async findAllByPharmacist(pharmacistUsername: string) {
+  static async findAllByPharmacist(pharmacistEmail: string) {
     return prisma.order.findMany({
       where: {
         partner: {
-          pharmacistUsername
+          pharmacistEmail
         }
       },
       orderBy: { date: 'desc' },
       include: {
         items: true,
-        client: true
+        client: true,
+        partner: true
       }
     })
   }
@@ -53,6 +52,11 @@ export class OrderRepository {
       data: {
         status,
         pharmacistNote
+      },
+      include: {
+        items: true,
+        client: true,
+        partner: true
       }
     })
   }
@@ -62,7 +66,8 @@ export class OrderRepository {
       orderBy: { date: 'desc' },
       include: {
         client: true,
-        partner: true
+        partner: true,
+        items: true
       }
     })
   }

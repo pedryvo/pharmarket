@@ -21,7 +21,7 @@ enum OrderStatus {
 
 model User {
   id        String   @id @default(uuid())
-  username  String   @unique
+  email     String   @unique
   password  String
   name      String
   phone     String?
@@ -52,6 +52,8 @@ model Product {
   doses      Float[]     // Suggested dosages
   factor     Float?      // Custom profit factor
   active     Boolean     @default(true)
+  partner    Partner     @relation(fields: [partnerId], references: [id])
+  partnerId  Int
   orderItems OrderItem[]
 }
 
@@ -61,17 +63,18 @@ model Partner {
   city               String
   wa                 String   // WhatsApp
   rt                 String   // Responsible Technician
-  pharmacist         User     @relation(fields: [pharmacistUsername], references: [username])
-  pharmacistUsername String
+  pharmacist      User     @relation(fields: [pharmacistEmail], references: [email])
+  pharmacistEmail String
   specs              String[] // Specialties
   active             Boolean  @default(true)
   orders             Order[]
+  products           Product[]
 }
 
 model Order {
-  id             String      @id // VTL-XXXX
-  client         User        @relation(fields: [clientUsername], references: [username])
-  clientUsername String
+  id           String      @id // VTL-XXXX
+  client       User        @relation(fields: [clientEmail], references: [email])
+  clientEmail  String
   date           DateTime    @default(now())
   formulaName    String
   form           String      // Pharmaceutical form

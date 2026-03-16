@@ -5,7 +5,7 @@ import { OrderStatus } from '@prisma/client';
 
 export class OrderService {
   static async createOrder(data: {
-    clientUsername: string;
+    clientEmail: string;
     formulaName: string;
     form: string;
     caps: number;
@@ -23,6 +23,7 @@ export class OrderService {
       data.items.map(async (it) => {
         const prod = await productProvider.findById(it.productId);
         if (!prod) throw new Error(`Product ${it.productId} not found`);
+        if (prod.partnerId !== data.partnerId) throw new Error(`O ativo ${prod.name} não pertence à farmácia selecionada`);
         return {
           ...it,
           name: prod.name,
@@ -44,7 +45,7 @@ export class OrderService {
     
     return OrderRepository.create({
       id: nextId,
-      client: { connect: { username: data.clientUsername } },
+      client: { connect: { email: data.clientEmail } },
       formulaName: data.formulaName,
       form: data.form,
       caps: data.caps,
@@ -56,7 +57,7 @@ export class OrderService {
       obs: data.obs,
       items: {
         create: itemsWithData.map(it => {
-          const itemCalc = PricingService.calculateItem(it.cpg, it.factor, globalFactor, it.dosePerCap, data.caps);
+          const itemCalc = PricingService.calculateItem(it.cpg, it.factor, globalFactor, it.dosePerCap, data.caps, it.unit);
           return {
             productId: it.productId,
             name: it.name,

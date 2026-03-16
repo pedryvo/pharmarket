@@ -1,10 +1,10 @@
 import prisma from '@/lib/db'
-import { Prisma } from '@prisma/client'
+import type { Prisma, Role } from '@prisma/client'
 
 export class UserRepository {
-  static async findByUsername(username: string) {
+  static async findByEmail(email: string) {
     return prisma.user.findUnique({
-      where: { username }
+      where: { email }
     })
   }
 
@@ -18,9 +18,9 @@ export class UserRepository {
     return prisma.user.create({ data })
   }
 
-  static async findAllByRole(role: Prisma.EnumRoleFilter) {
+  static async findAll() {
     return prisma.user.findMany({
-      where: { role }
+      orderBy: { createdAt: 'desc' }
     })
   }
 }

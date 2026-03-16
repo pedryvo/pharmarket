@@ -1,24 +1,55 @@
 import { UserRepository } from '@/repositories/user.repository';
-import { Role } from '@prisma/client';
+import bcrypt from 'bcryptjs';
+import { SignJWT, jwtVerify } from 'jose';
+import { cookies } from 'next/headers';
+
+const SECRET = new TextEncoder().encode(process.env.JWT_SECRET || 'vitalab-secret-key-2024');
 
 export class AuthService {
-  static async validateUser(username: string, password: string) {
-    const user = await UserRepository.findByUsername(username);
-    if (user && user.password === password) {
-      // In a real app, don't return the password
-      const { password, ...safeUser } = user;
-      return safeUser;
-    }
-    return null;
+  static async login(email: string, password: string) {
+    const user = await UserRepository.findByEmail(email);
+    if (!user) return null;
+
+    const isValid = await bcrypt.compare(password, user.password);
+    if (!isValid) return null;
+
+    const token = await new SignJWT({ 
+      id: user.id, 
+      email: user.email, 
+      role: user.role,
+      name: user.name 
+    })
+      .setProtectedHeader({ alg: 'HS256' })
+      .setIssuedAt()
+      .setExpirationTime('24h')
+      .sign(SECRET);
+
+    const cookieStore = await cookies();
+    cookieStore.set('session', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 60 * 60 * 24 // 24 hours
+    });
+
+    return { id: user.id, email: user.email, role: user.role, name: user.name };
   }
 
-  static async register(data: { username: string; password: string; name: string; phone: string }) {
-    const existing = await UserRepository.findByUsername(data.username);
-    if (existing) throw new Error('Username already exists');
-    
-    return UserRepository.create({
-      ...data,
-      role: Role.CLIENT
-    });
+  static async logout() {
+    const cookieStore = await cookies();
+    cookieStore.delete('session');
+  }
+
+  static async getSession() {
+    const cookieStore = await cookies();
+    const token = cookieStore.get('session')?.value;
+    if (!token) return null;
+
+    try {
+      const { payload } = await jwtVerify(token, SECRET);
+      return payload as any;
+    } catch (e) {
+      return null;
+    }
   }
 }

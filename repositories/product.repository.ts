@@ -1,15 +1,16 @@
 import prisma from '@/lib/db'
-import { Prisma } from '@prisma/client'
+import type { Prisma } from '@prisma/client'
 
 export class ProductRepository {
-  static async findAll(filters: { categoryId?: string; search?: string } = {}) {
-    const { categoryId, search } = filters
+  static async findAll(filters: { categoryId?: string; search?: string; partnerId?: number; includeInactive?: boolean } = {}) {
+    const { categoryId, search, partnerId, includeInactive } = filters
     
     return prisma.product.findMany({
       where: {
-        active: true,
         AND: [
+          includeInactive ? {} : { active: true },
           categoryId ? { categoryId } : {},
+          partnerId ? { partnerId } : {},
           search ? {
             OR: [
               { name: { contains: search, mode: 'insensitive' } },

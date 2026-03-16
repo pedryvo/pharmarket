@@ -14,15 +14,15 @@ interface CategoryStripProps {
 
 export const CategoryStrip = ({ categories, activeCategory, onCategoryChange }: CategoryStripProps) => {
   return (
-    <div className="cat-strip flex gap-2 p-4 pt-0 overflow-x-auto border-b border-vitalab-border bg-white scrollbar-hide">
+    <div className="cat-strip flex gap-2 p-3 pt-0 overflow-x-auto border-b border-vitalab-border bg-white scrollbar-hide">
       <button
         onClick={() => onCategoryChange('all')}
-        className={`cat-pill flex-shrink-0 flex items-center gap-[0.45rem] px-[0.95rem] py-[0.42rem] rounded-[20px] border-[1.5px] text-[0.82rem] font-semibold cursor-pointer transition-all whitespace-nowrap
+        className={`cat-pill flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-[0.76rem] font-bold cursor-pointer transition-all whitespace-nowrap
           ${activeCategory === 'all' 
-            ? 'bg-vitalab-green border-vitalab-green text-white' 
+            ? 'bg-vitalab-green border-vitalab-green text-white shadow-vitalab-sm' 
             : 'bg-white border-vitalab-border text-vitalab-text-secondary hover:border-vitalab-green hover:text-vitalab-green'}`}
       >
-        <span className="cat-ico text-[0.95rem]">✨</span>
+        <span className="cat-ico text-[0.85rem]">✨</span>
         Todos
       </button>
       
@@ -30,12 +30,12 @@ export const CategoryStrip = ({ categories, activeCategory, onCategoryChange }: 
         <button
           key={cat.id}
           onClick={() => onCategoryChange(cat.id)}
-          className={`cat-pill flex-shrink-0 flex items-center gap-[0.45rem] px-[0.95rem] py-[0.42rem] rounded-[20px] border-[1.5px] text-[0.82rem] font-semibold cursor-pointer transition-all whitespace-nowrap
+          className={`cat-pill flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-[0.76rem] font-bold cursor-pointer transition-all whitespace-nowrap
             ${activeCategory === cat.id 
-              ? 'bg-vitalab-green border-vitalab-green text-white' 
+              ? 'bg-vitalab-green border-vitalab-green text-white shadow-vitalab-sm' 
               : 'bg-white border-vitalab-border text-vitalab-text-secondary hover:border-vitalab-green hover:text-vitalab-green'}`}
         >
-          <span className="cat-ico text-[0.95rem]">{cat.ico}</span>
+          <span className="cat-ico text-[0.85rem]">{cat.ico}</span>
           {cat.label}
         </button>
       ))}

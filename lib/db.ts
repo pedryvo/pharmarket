@@ -1,10 +1,6 @@
 import { PrismaClient } from '@prisma/client'
-import { PrismaNeon } from '@prisma/adapter-neon'
-import { Pool, neonConfig } from '@neondatabase/serverless'
-import ws from 'ws'
-
-// Configure Neon to use the 'ws' package for WebSockets in Node.js
-neonConfig.webSocketConstructor = ws
+import { PrismaPg } from '@prisma/adapter-pg'
+import pg from 'pg'
 
 const prismaClientSingleton = () => {
   const connectionString = process.env.DATABASE_URL
@@ -13,15 +9,15 @@ const prismaClientSingleton = () => {
     throw new Error('DATABASE_URL is missing in environment variables')
   }
 
-  // Create a connection pool for Neon
-  const pool = new Pool({ 
+  // Use standard pg Pool for better stability in Node.js environments
+  const pool = new pg.Pool({ 
     connectionString,
-    connectionTimeoutMillis: 5000,
-    max: 1 // In serverless, it's often better to keep few connections per instance
+    connectionTimeoutMillis: 10000, // Increased timeout for Neon cold starts
+    max: 1 // Recommended for serverless to avoid connection exhaustion
   })
 
-  // Use the Prisma Neon adapter
-  const adapter = new PrismaNeon(pool as any)
+  // Use the Prisma standard PG adapter
+  const adapter = new PrismaPg(pool as any)
   return new PrismaClient({ adapter })
 }
 

@@ -12,8 +12,8 @@ importers:
         specifier: ^18.0.1
         version: 18.0.1(@types/react@19.2.14)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
       '@neondatabase/serverless':
-        specifier: ^0.10.4
-        version: 0.10.4
+        specifier: ^1.0.2
+        version: 1.0.2
       '@prisma/adapter-neon':
         specifier: ^7.5.0
         version: 7.5.0
@@ -5090,7 +5090,7 @@ snapshots:
 
   '@prisma/adapter-neon@7.5.0':
     dependencies:
-      '@neondatabase/serverless': 1.0.2
+      '@neondatabase/serverless': 0.10.4
       '@prisma/driver-adapter-utils': 7.5.0
       postgres-array: 3.0.4
 

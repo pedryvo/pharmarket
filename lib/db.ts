@@ -3,28 +3,26 @@ import { PrismaNeon } from '@prisma/adapter-neon'
 import { Pool, neonConfig } from '@neondatabase/serverless'
 import ws from 'ws'
 
+// Configure Neon to use the 'ws' package for WebSockets in Node.js
 neonConfig.webSocketConstructor = ws
-neonConfig.pipelineConnect = false
 
 const prismaClientSingleton = () => {
   const connectionString = process.env.DATABASE_URL
   
   if (!connectionString) {
-    console.error('DB INIT ERROR: DATABASE_URL environment variable is missing!')
-    throw new Error('DATABASE_URL is required')
+    throw new Error('DATABASE_URL is missing in environment variables')
   }
 
-  try {
-    console.log('DB INIT: Attempting connection to Neon...')
-    const pool = new Pool({ connectionString })
-    const adapter = new PrismaNeon(pool as any)
-    const client = new PrismaClient({ adapter })
-    console.log('DB INIT: PrismaClient initialized with Neon adapter.')
-    return client
-  } catch (err) {
-    console.error('DB INIT ERROR: Failed to initialize PrismaClient:', err)
-    throw err
-  }
+  // Create a connection pool for Neon
+  const pool = new Pool({ 
+    connectionString,
+    connectionTimeoutMillis: 5000,
+    max: 1 // In serverless, it's often better to keep few connections per instance
+  })
+
+  // Use the Prisma Neon adapter
+  const adapter = new PrismaNeon(pool as any)
+  return new PrismaClient({ adapter })
 }
 
 declare global {

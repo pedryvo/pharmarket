@@ -193,9 +193,7 @@ export const FormulaCreationModal = ({
                       className="group p-8 bg-white border-2 border-vitalab-border rounded-3xl text-left hover:border-vitalab-green hover:shadow-vitalab-xl transition-all flex items-center justify-between"
                     >
                       <div className="flex items-center gap-6">
-                        <div className="w-14 h-14 bg-vitalab-bg rounded-2xl flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">
-                          {p.ico || '🏢'}
-                        </div>
+                        <div className="hidden w-14 h-14 bg-vitalab-bg rounded-2xl flex items-center justify-center text-[10px] font-black group-hover:scale-110 transition-transform" />
                         <div>
                           <div className="font-black text-xl text-vitalab-text group-hover:text-vitalab-green transition-colors">{p.name}</div>
                           <div className="text-[0.7rem] font-bold text-vitalab-text-muted uppercase tracking-widest mt-1 flex items-center gap-2">
@@ -249,7 +247,7 @@ export const FormulaCreationModal = ({
                       ? 'bg-vitalab-green border-vitalab-green text-white shadow-vitalab-sm' 
                       : 'bg-white border-vitalab-border text-vitalab-text-muted hover:border-vitalab-green hover:text-vitalab-green'}`}
                 >
-                  ✨ Todos
+                  <span className="font-black">*</span> Todos
                 </button>
                 {categories.map(cat => (
                   <button
@@ -281,7 +279,7 @@ export const FormulaCreationModal = ({
                   >
                     <div>
                       <div className="flex justify-between items-start mb-3">
-                        <div className="w-10 h-10 bg-vitalab-bg rounded-xl flex items-center justify-center text-lg">{p.ico || '🧪'}</div>
+                        <div className="w-10 h-10 bg-vitalab-bg rounded-xl flex items-center justify-center text-[10px] font-black">{p.ico || 'LAB'}</div>
                         {isInCart && (
                           <div className="bg-vitalab-green text-white p-1 rounded-full">
                             <CheckCircle2 size={12} />
@@ -361,7 +359,7 @@ export const FormulaCreationModal = ({
                     {initialItems.map(it => (
                       <div key={it.id} className="bg-white border border-vitalab-border rounded-lg p-2.5 px-3 shadow-sm animate-in slide-in-from-right-2">
                         <div className="flex justify-between items-start mb-2">
-                          <span className="text-xs font-black text-vitalab-text truncate pr-4">{it.ico || '💊'} {it.name}</span>
+                          <span className="text-xs font-black text-vitalab-text truncate pr-4">{it.ico || '*'} {it.name}</span>
                           <button onClick={() => onRemoveItem(it.id)} className="text-vitalab-text-secondary hover:text-red-500 transition-colors">
                             <Trash2 size={12} />
                           </button>

@@ -24,8 +24,7 @@ export const ProductCard = ({ product, isInCart, onAdd }: ProductCardProps) => {
       onClick={() => onAdd(product.id)}
       className="prod-card bg-white border-[1.5px] border-vitalab-border rounded-vitalab-lg overflow-hidden cursor-pointer transition-all duration-200 hover:border-vitalab-green hover:shadow-vitalab-m hover:-translate-y-[2px] group relative"
     >
-      <div className="prod-card-top bg-vitalab-green-extralight p-4 pt-[1.1rem] flex flex-col items-center justify-center min-h-[85px] relative">
-        {product.ico && <div className="prod-card-ico text-[1.8rem] mb-1 group-hover:scale-110 transition-transform">{product.ico}</div>}
+      <div className="prod-card-top bg-vitalab-green-extralight p-4 py-6 flex flex-col items-center justify-center min-h-[60px] relative">
         <span 
           className="prod-cat-badge text-[0.6rem] font-[700] px-2 py-[0.1rem] rounded-[20px] uppercase tracking-[0.07em]"
           style={{ backgroundColor: product.category.bg, color: product.category.color }}

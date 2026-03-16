@@ -3,7 +3,6 @@
 interface Category {
   id: string;
   label: string;
-  ico: string;
 }
 
 interface CategoryStripProps {
@@ -22,7 +21,6 @@ export const CategoryStrip = ({ categories, activeCategory, onCategoryChange }: 
             ? 'bg-vitalab-green border-vitalab-green text-white shadow-vitalab-sm' 
             : 'bg-white border-vitalab-border text-vitalab-text-secondary hover:border-vitalab-green hover:text-vitalab-green'}`}
       >
-        <span className="cat-ico text-[0.85rem]">✨</span>
         Todos
       </button>
       
@@ -35,7 +33,6 @@ export const CategoryStrip = ({ categories, activeCategory, onCategoryChange }: 
               ? 'bg-vitalab-green border-vitalab-green text-white shadow-vitalab-sm' 
               : 'bg-white border-vitalab-border text-vitalab-text-secondary hover:border-vitalab-green hover:text-vitalab-green'}`}
         >
-          <span className="cat-ico text-[0.85rem]">{cat.ico}</span>
           {cat.label}
         </button>
       ))}

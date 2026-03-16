@@ -104,3 +104,18 @@ export async function updateOrderStatusAction(id: string, status: any, note?: st
   revalidatePath('/admin');
   revalidatePath('/pharmacist');
 }
+
+// Users
+export async function updateUserAction(id: string, data: any) {
+  await ensureAdmin();
+  const { UserRepository } = await import('@/repositories/user.repository');
+  await UserRepository.update(id, data);
+  revalidatePath('/admin');
+}
+
+export async function deleteUserAction(id: string) {
+  await ensureAdmin();
+  const { UserRepository } = await import('@/repositories/user.repository');
+  await UserRepository.delete(id);
+  revalidatePath('/admin');
+}

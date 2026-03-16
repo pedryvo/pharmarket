@@ -86,7 +86,7 @@ export const CatalogScreen = ({
               Manipule suas fórmulas com os melhores ativos do mercado e receba em casa com segurança e agilidade.
             </p>
           <div className="hero-badges flex gap-2 mt-5 flex-wrap">
-            {['✓ Revisão farmacêutica', '✓ Preço por grama real', '✓ Retorno via WhatsApp'].map((b) => (
+            {['Revisao farmaceutica', 'Preco por grama real', 'Retorno via WhatsApp'].map((b) => (
               <span key={b} className="hero-badge bg-white/15 border border-white/20 rounded-[20px] px-[0.85rem] py-[0.3rem] text-[0.76rem] text-white font-semibold backdrop-blur-[4px]">
                 {b}
               </span>
@@ -108,7 +108,7 @@ export const CatalogScreen = ({
                   ? 'border-vitalab-green bg-vitalab-green-light' 
                   : 'bg-vitalab-bg border-vitalab-border hover:border-vitalab-green hover:bg-vitalab-green-light'}`}
             >
-              <div className="partner-ico w-9 h-9 rounded-[9px] bg-vitalab-green-light flex items-center justify-center text-[17px] flex-shrink-0">🏥</div>
+              <div className="hidden partner-ico w-9 h-9 rounded-[9px] bg-vitalab-green-light flex items-center justify-center text-[10px] font-black flex-shrink-0" />
               <div>
                 {/* Assuming Badge is a component, adding a placeholder div for now */}
                 <div className="bg-vitalab-green/10 text-vitalab-green-text border-vitalab-green/20 font-black text-[0.6rem] px-2 py-0.5 uppercase tracking-wider rounded">
@@ -120,7 +120,7 @@ export const CatalogScreen = ({
               </div>
               {selectedPartnerId === p.id && (
                 <div className="partner-tag text-[0.68rem] font-[700] px-[0.45rem] py-[0.15rem] rounded-[5px] bg-vitalab-green-light text-vitalab-green-d ml-auto">
-                  ✓ Selecionada
+                  Selecionada
                 </div>
               )}
             </div>

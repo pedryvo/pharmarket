@@ -74,6 +74,18 @@ export const PharmacistContainer = ({ currentUser, initialOrders }: PharmacistCo
     setMounted(true);
   }, []);
 
+  const handleSendWA = (order: any) => {
+    if (!order || !order.client?.phone) {
+      toast.error('Telefone do cliente não encontrado');
+      return;
+    }
+    const msg = generateWAMessage(order);
+    const phone = order.client.phone.replace(/\D/g, '');
+    const url = `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
+    window.open(url, '_blank');
+    setContactedOrders(prev => new Set(prev).add(order.id));
+  };
+
   const handleCopyWA = async (order: any) => {
     const msg = generateWAMessage(order);
     try {
@@ -87,7 +99,7 @@ export const PharmacistContainer = ({ currentUser, initialOrders }: PharmacistCo
 
   const generateWAMessage = (o: any) => {
     if (!o) return '';
-    const comp = o.items?.map((i: any) => `  ${i.ico || '•'} ${i.name} — ${i.dosePerCap}${i.unit}/cáps (${fG(i.dosePerCap * o.caps)} total)`).join('\n');
+    const comp = o.items?.map((i: any) => `  * ${i.name} -- ${i.dosePerCap}${i.unit}/caps (${fG(i.dosePerCap * o.caps)} total)`).join('\n');
     
     let msg = '';
     const partnerName = o.partner?.name || 'VitaLab';
@@ -95,18 +107,18 @@ export const PharmacistContainer = ({ currentUser, initialOrders }: PharmacistCo
 
     if (o.status === 'APPROVED') {
       if (o.fromStatus === 'COMPLETED' || o.fromStatus === 'ADJUSTMENT') {
-        msg = `🔄 *VitaLab — ${partnerName}*\n\nOlá, *${clientName}*!\n\nRepercutimos sua fórmula *${o.formulaName}*. Ela voltou para o status de *EM PREPARAÇÃO*. 🧪🌿\n\nAcompanhe as atualizações pelo nosso aplicativo. Obrigado!`;
+        msg = `*VitaLab -- ${partnerName}*\n\nOlá, *${clientName}*!\n\nRepercutimos sua fórmula *${o.formulaName}*. Ela voltou para o status de *EM PREPARAÇÃO*.\n\nAcompanhe as atualizações pelo nosso aplicativo. Obrigado!`;
       } else {
-        msg = `✅ *VitaLab — ${partnerName}*\n\nOlá, *${clientName}*! 👋\n\nSua fórmula *${o.formulaName}* foi *APROVADA*! 🎉\n\n📋 *Composição:*\n${comp}\n\n🔹 ${o.caps} unidades · ${o.form || 'Cápsula'}\n💰 *Total: ${fBRL(o.total)}*\n\n${o.pharmacistNote ? `💬 _"${o.pharmacistNote}"_\n\n` : ''}Estamos iniciando a manipulação. Você será avisado assim que estiver pronta! 🧪🌿`;
+        msg = `*VitaLab -- ${partnerName}*\n\nOlá, *${clientName}*!\n\nSua fórmula *${o.formulaName}* foi *APROVADA*!\n\n*Composição:*\n${comp}\n\n- ${o.caps} unidades · ${o.form || 'Cápsula'}\n*Total: ${fBRL(o.total)}*\n\n${o.pharmacistNote ? `_ "${o.pharmacistNote}"_\n\n` : ''}Estamos iniciando a manipulação. Você será avisado assim que estiver pronta!`;
       }
     } else if (o.status === 'ADJUSTMENT') {
-      msg = `⚠️ *VitaLab — ${partnerName}*\n\nOlá, *${clientName}*!\n\nNosso farmacêutico analisou sua fórmula *${o.formulaName}* e solicita *ajustes*.\n\n💬 *Observação:*\n_"${o.pharmacistNote || note}"_\n\nAcesse o app para solicitar uma nova fórmula ou entre em contato conosco. 💊`;
+      msg = `*VitaLab -- ${partnerName}*\n\nOlá, *${clientName}*!\n\nNosso farmacêutico analisou sua fórmula *${o.formulaName}* e solicita *ajustes*.\n\n*Observação:*\n_"${o.pharmacistNote || note}"_\n\nAcesse o app para solicitar uma nova fórmula ou entre em contato conosco.`;
     } else if (o.status === 'REVIEW') {
-      msg = `🔬 *VitaLab — ${partnerName}*\n\nOlá, *${clientName}*!\n\nSuas fórmulas voltaram para *análise técnica*. ⏳\n\nAcompanhe o status pelo nosso aplicativo.\n\nObrigado! 🌱`;
+      msg = `*VitaLab -- ${partnerName}*\n\nOlá, *${clientName}*!\n\nSuas fórmulas voltaram para *análise técnica*.\n\nAcompanhe o status pelo nosso aplicativo.\n\nObrigado!`;
     } else if (o.status === 'COMPLETED') {
-      msg = `✨ *VitaLab — ${partnerName}*\n\nOlá, *${clientName}*! 🎉\n\nSua fórmula *${o.formulaName}* está *PRONTA* para retirada ou entrega!\n\n📞 Entre em contato agora para finalizar os detalhes de frete e pagamento.\n\nObrigado por escolher a VitaLab! 🌿🧪`;
+      msg = `*VitaLab -- ${partnerName}*\n\nOlá, *${clientName}*!\n\nSua fórmula *${o.formulaName}* está *PRONTA* para retirada ou entrega!\n\nEntre em contato agora para finalizar os detalhes de frete e pagamento.\n\nObrigado por escolher a VitaLab!`;
     } else {
-      msg = `*VitaLab — ${partnerName}*\n\nSua fórmula *${o.formulaName}* teve o status atualizado para: *${o.status}*. 🌿`;
+      msg = `*VitaLab -- ${partnerName}*\n\nSua fórmula *${o.formulaName}* teve o status atualizado para: *${o.status}*.`;
     }
     return msg;
   };
@@ -335,7 +347,7 @@ export const PharmacistContainer = ({ currentUser, initialOrders }: PharmacistCo
                     >
                       {preparationOrders.length === 0 ? (
                         <div className="h-full flex flex-col items-center justify-center py-20 text-vitalab-text-muted">
-                          <div className="text-xl opacity-10 mb-2">🌿</div>
+                          <div className="hidden text-xl opacity-10 mb-2" />
                           <p className="text-[0.7rem] font-medium">Fila limpa</p>
                         </div>
                       ) : (
@@ -411,7 +423,7 @@ export const PharmacistContainer = ({ currentUser, initialOrders }: PharmacistCo
                     >
                       {historyOrders.length === 0 ? (
                         <div className="h-full flex flex-col items-center justify-center py-20 text-vitalab-text-muted">
-                          <div className="text-2xl opacity-10 mb-2">📋</div>
+                          <div className="hidden text-2xl opacity-10 mb-2" />
                           <p className="text-[0.75rem] font-medium">Histórico vazio</p>
                         </div>
                       ) : (
@@ -609,7 +621,7 @@ export const PharmacistContainer = ({ currentUser, initialOrders }: PharmacistCo
             <div className="bg-[#e9fbe9] border border-[#c3e6c3] rounded-[24px] overflow-hidden shadow-vitalab-l animate-in zoom-in-95 duration-300">
               <div className="bg-[#075e54] p-4 flex items-center gap-3">
                 <div className="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center text-white text-base">
-                  ⚗
+                  LAB
                 </div>
                 <div>
                   <div className="text-white font-bold text-[0.8rem]">VitaLab — Farmácia</div>
@@ -627,20 +639,29 @@ export const PharmacistContainer = ({ currentUser, initialOrders }: PharmacistCo
               </div>
             </div>
 
-            <div className="flex gap-2 w-full">
+            <div className="flex flex-col gap-2 w-full">
               <Button 
-                className="flex-1 bg-vitalab-green hover:bg-vitalab-green-text text-white font-black h-11 rounded-full shadow-vitalab-md"
-                onClick={() => handleCopyWA(waOrder)}
+                className="w-full bg-vitalab-green hover:bg-vitalab-green-text text-white font-black h-11 rounded-full shadow-vitalab-md gap-2"
+                onClick={() => handleSendWA(waOrder)}
               >
-                Copiar Mensagem
+                <ExternalLink size={18} /> ENVIAR WHATSAPP
               </Button>
-              <Button 
-                variant="outline"
-                className="flex-1 font-black h-11 rounded-full bg-white border-vitalab-border hover:bg-vitalab-bg"
-                onClick={() => setWaOrder(null)}
-              >
-                Sair
-              </Button>
+              <div className="flex gap-2">
+                <Button 
+                  variant="outline"
+                  className="flex-1 bg-white border-vitalab-border text-vitalab-text-secondary font-black h-11 rounded-full hover:bg-vitalab-bg"
+                  onClick={() => handleCopyWA(waOrder)}
+                >
+                  Copiar Texto
+                </Button>
+                <Button 
+                  variant="outline"
+                  className="flex-1 font-black h-11 rounded-full bg-white border-vitalab-border hover:bg-vitalab-bg"
+                  onClick={() => setWaOrder(null)}
+                >
+                  Sair
+                </Button>
+              </div>
             </div>
           </div>
         </DialogContent>

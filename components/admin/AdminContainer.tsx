@@ -50,7 +50,9 @@ import {
   createPartnerAction,
   updatePartnerAction,
   deletePartnerAction,
-  updateOrderStatusAction
+  updateOrderStatusAction,
+  updateUserAction,
+  deleteUserAction
 } from '@/app/actions/admin';
 
 interface AdminContainerProps {
@@ -142,6 +144,20 @@ export function AdminContainer({ session, initialData }: AdminContainerProps) {
         rt: editValues.rt,
         active: editValues.active,
         specs: editValues.specsRaw ? editValues.specsRaw.split(',').map((s: string) => s.trim()).filter(Boolean) : []
+      });
+      setEditingId(null);
+    } catch (e: any) {
+      alert(e.message);
+    }
+  };
+
+  const saveUser = async (id: string) => {
+    try {
+      await updateUserAction(id, {
+        name: editValues.name,
+        email: editValues.email,
+        role: editValues.role,
+        phone: editValues.phone
       });
       setEditingId(null);
     } catch (e: any) {
@@ -643,7 +659,7 @@ export function AdminContainer({ session, initialData }: AdminContainerProps) {
           )}
 
           {activeTab === 'orders' && (
-            <div className="bg-white rounded-vitalab-xl border border-vitalab-border shadow-vitalab-md overflow-hidden">
+            <div className="bg-white rounded-vitalab-xl border border-vitalab-border shadow-vitalab-md overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-500">
                <Table>
                 <TableHeader className="bg-vitalab-bg/50">
                   <TableRow className="hover:bg-transparent border-vitalab-border">
@@ -687,6 +703,76 @@ export function AdminContainer({ session, initialData }: AdminContainerProps) {
                         <Button variant="outline" size="icon" className="h-8 w-8 border-vitalab-border text-vitalab-text-muted hover:text-vitalab-green">
                            <Eye size={14} />
                         </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          )}
+
+          {activeTab === 'users' && (
+            <div className="bg-white rounded-vitalab-xl border border-vitalab-border shadow-vitalab-md overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <Table>
+                <TableHeader className="bg-vitalab-bg/50">
+                  <TableRow className="hover:bg-transparent border-vitalab-border">
+                    <TableHead className="px-6 py-4 text-[0.65rem] uppercase font-black tracking-widest text-vitalab-text-muted">Usuário</TableHead>
+                    <TableHead className="px-6 py-4 text-[0.65rem] uppercase font-black tracking-widest text-vitalab-text-muted">Contato</TableHead>
+                    <TableHead className="px-6 py-4 text-[0.65rem] uppercase font-black tracking-widest text-vitalab-text-muted text-center">Nível</TableHead>
+                    <TableHead className="px-6 py-4 text-[0.65rem] uppercase font-black tracking-widest text-vitalab-text-muted text-right">Ações</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {initialData.users.map((u) => (
+                    <TableRow key={u.id} className="group transition-colors border-vitalab-border">
+                      <TableCell className="px-6 py-4">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-full bg-vitalab-bg flex items-center justify-center border border-vitalab-border text-vitalab-text-muted group-hover:bg-vitalab-green/5 group-hover:border-vitalab-green/20 transition-colors">
+                            <Users size={20} />
+                          </div>
+                          <div>
+                            <div className="font-bold text-vitalab-text text-sm">{u.name}</div>
+                            <div className="text-[0.6rem] text-vitalab-text-muted font-bold uppercase tracking-tight">Desde {new Date(u.createdAt).toLocaleDateString()}</div>
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell className="px-6 py-4">
+                        <div className="text-xs font-bold text-vitalab-text">{u.email}</div>
+                        <div className="text-[0.65rem] text-vitalab-text-muted font-mono">{u.phone || 'Sem telefone'}</div>
+                      </TableCell>
+                      <TableCell className="px-6 py-4 text-center">
+                        <Badge className={`text-[0.6rem] font-black uppercase tracking-widest ${
+                          u.role === 'ADMIN' ? 'bg-red-50 text-red-600 border-red-100' :
+                          u.role === 'PHARMA' ? 'bg-vitalab-green/10 text-vitalab-green border-vitalab-green/20' :
+                          'bg-vitalab-bg text-vitalab-text-muted border-vitalab-border/50'
+                        }`} variant="outline">
+                          {u.role}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="px-6 py-4 text-right">
+                        <div className="flex gap-1 justify-end opacity-0 group-hover:opacity-100 transition-opacity">
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            onClick={() => startEdit(u.id, { 
+                              name: u.name, 
+                              email: u.email, 
+                              role: u.role, 
+                              phone: u.phone 
+                            })}
+                            className="h-8 px-2 border-vitalab-border text-vitalab-text-muted hover:text-vitalab-green hover:border-vitalab-green font-bold text-[0.65rem] uppercase"
+                          >
+                            Editar
+                          </Button>
+                          <Button 
+                            variant="outline" 
+                            size="icon" 
+                            onClick={() => deleteUserAction(u.id)}
+                            className="h-8 w-8 border-vitalab-border text-vitalab-text-muted hover:text-red-500 hover:border-red-500"
+                          >
+                            <Trash2 size={14} />
+                          </Button>
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))}
@@ -770,7 +856,6 @@ export function AdminContainer({ session, initialData }: AdminContainerProps) {
         </DialogContent>
       </Dialog>
 
-      {/* Resource Edit Dialog */}
       <Dialog open={!!editingId && editingId !== 'settings'} onOpenChange={(open) => !open && cancelEdit()}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
@@ -812,7 +897,7 @@ export function AdminContainer({ session, initialData }: AdminContainerProps) {
                 </div>
               </>
             )}
-             {activeTab === 'partners' && (
+            {activeTab === 'partners' && (
               <>
                 <div className="grid grid-cols-4 items-center gap-4">
                   <Label className="text-right text-xs font-bold uppercase tracking-widest opacity-70">Farmácia</Label>
@@ -828,6 +913,34 @@ export function AdminContainer({ session, initialData }: AdminContainerProps) {
                 </div>
               </>
             )}
+            {activeTab === 'users' && (
+              <>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label className="text-right text-xs font-bold uppercase tracking-widest opacity-70">Nome</Label>
+                  <Input value={editValues.name} onChange={e => setEditValues({...editValues, name: e.target.value})} className="col-span-3 font-bold" />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label className="text-right text-xs font-bold uppercase tracking-widest opacity-70">E-mail</Label>
+                  <Input value={editValues.email || ''} onChange={e => setEditValues({...editValues, email: e.target.value})} className="col-span-3 font-mono" />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label className="text-right text-xs font-bold uppercase tracking-widest opacity-70">Nível</Label>
+                  <select 
+                    value={editValues.role} 
+                    onChange={e => setEditValues({...editValues, role: e.target.value})}
+                    className="col-span-3 h-10 px-3 rounded-md border border-vitalab-border bg-white text-sm font-bold outline-none focus:border-vitalab-green"
+                  >
+                    <option value="CLIENT">CLIENT</option>
+                    <option value="PHARMA">PHARMA</option>
+                    <option value="ADMIN">ADMIN</option>
+                  </select>
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label className="text-right text-xs font-bold uppercase tracking-widest opacity-70">Telefone</Label>
+                  <Input value={editValues.phone || ''} onChange={e => setEditValues({...editValues, phone: e.target.value})} className="col-span-3 font-mono" />
+                </div>
+              </>
+            )}
           </div>
           <DialogFooter>
             <Button 
@@ -835,6 +948,7 @@ export function AdminContainer({ session, initialData }: AdminContainerProps) {
                  if (activeTab === 'products') saveProduct(editingId as number);
                  if (activeTab === 'categories') saveCategory(editingId as string);
                  if (activeTab === 'partners') savePartner(editingId as number);
+                 if (activeTab === 'users') saveUser(editingId as string);
                }} 
                className="bg-vitalab-green text-white font-black"
             >

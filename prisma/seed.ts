@@ -64,11 +64,11 @@ async function main() {
   // 1. Categories
   console.log('Seeding categories...')
   const categories = [
-    {id:'vitamina',     label:'Vitaminas',     ico:'💊', bg:'rgba(45,134,83,.12)',  color:'#1f6340'},
-    {id:'fitoterapico', label:'Fitoterápicos', ico:'🌿', bg:'rgba(34,150,90,.1)',   color:'#1a6635'},
-    {id:'mineral',      label:'Minerais',      ico:'⚡', bg:'rgba(242,112,33,.12)', color:'#92400e'},
-    {id:'aminoacido',   label:'Aminoácidos',   ico:'🔬', bg:'rgba(74,108,247,.12)', color:'#3730a3'},
-    {id:'probiotico',   label:'Probióticos',   ico:'🦠', bg:'rgba(150,60,190,.1)',  color:'#5b21b6'},
+    {id:'vitamina',     label:'Vitaminas',     bg:'rgba(45,134,83,.12)',  color:'#1f6340'},
+    {id:'fitoterapico', label:'Fitoterápicos', bg:'rgba(34,150,90,.1)',   color:'#1a6635'},
+    {id:'mineral',      label:'Minerais',      bg:'rgba(242,112,33,.12)', color:'#92400e'},
+    {id:'aminoacido',   label:'Aminoácidos',   bg:'rgba(74,108,247,.12)', color:'#3730a3'},
+    {id:'probiotico',   label:'Probióticos',   bg:'rgba(150,60,190,.1)',  color:'#5b21b6'},
   ]
 
   for (const cat of categories) {
@@ -107,14 +107,14 @@ async function main() {
   console.log('Seeding products...')
   const products = [
     // Partner 1
-    {name:'Vitamina C',          categoryId:'vitamina',     unit:'mg',  ico:'🍊', desc:'Ácido Ascórbico. Antioxidante e suporte imunológico.',                  cpg:0.04,  doses:[250,500,1000,2000],   active:true, partnerId: partner1.id},
-    {name:'Vitamina D3',          categoryId:'vitamina',     unit:'UI',  ico:'☀️', desc:'Colecalciferol. Saúde óssea e função imunológica.',                    cpg:2.80,  doses:[1000,2000,5000,10000], active:true, partnerId: partner1.id},
-    {name:'Magnesio Quelato',     categoryId:'mineral',      unit:'mg',  ico:'⚡', desc:'Bisglicinato de magnésio. Alta absorção.',                             cpg:0.22,  doses:[150,300,400,500],       active:true, partnerId: partner1.id},
+    {name:'Vitamina C',          categoryId:'vitamina',     unit:'mg',  desc:'Acido Ascorbico. Antioxidante e suporte imunologico.',                  cpg:0.04,  doses:[250,500,1000,2000],   active:true, partnerId: partner1.id},
+    {name:'Vitamina D3',          categoryId:'vitamina',     unit:'UI',  desc:'Colecalciferol. Saude ossea e funcao imunologica.',                    cpg:2.80,  doses:[1000,2000,5000,10000], active:true, partnerId: partner1.id},
+    {name:'Magnesio Quelato',     categoryId:'mineral',      unit:'mg',  desc:'Bisglicinato de magnesio. Alta absorcao.',                             cpg:0.22,  doses:[150,300,400,500],       active:true, partnerId: partner1.id},
     
     // Partner 2
-    {name:'Vitamina B12',         categoryId:'vitamina',     unit:'mcg', ico:'💉', desc:'Cianocobalamina. Energia e função neurológica.',                       cpg:180.0, doses:[500,1000,2000,5000],   active:true, partnerId: partner2.id},
-    {name:'Ashwagandha KSM-66',   categoryId:'fitoterapico', unit:'mg',  ico:'🌾', desc:'Withania somnifera. Extrato padronizado de alta concentração.',         cpg:0.65,  doses:[300,500,600,900],       active:true, partnerId: partner2.id},
-    {name:'Ginkgo Biloba',        categoryId:'fitoterapico', unit:'mg',  ico:'🍃', desc:'Extrato padronizado para circulação periférica.',                      cpg:0.48,  doses:[40,80,120],            active:true, partnerId: partner2.id},
+    {name:'Vitamina B12',         categoryId:'vitamina',     unit:'mcg', desc:'Cianocobalamina. Energia e funcao neurologica.',                       cpg:180.0, doses:[500,1000,2000,5000],   active:true, partnerId: partner2.id},
+    {name:'Ashwagandha KSM-66',   categoryId:'fitoterapico', unit:'mg',  desc:'Withania somnifera. Extrato padronizado de alta concentracao.',         cpg:0.65,  doses:[300,500,600,900],       active:true, partnerId: partner2.id},
+    {name:'Ginkgo Biloba',        categoryId:'fitoterapico', unit:'mg',  desc:'Extrato padronizado para circulacao periferica.',                      cpg:0.48,  doses:[40,80,120],            active:true, partnerId: partner2.id},
   ]
 
   for (const prod of products) {

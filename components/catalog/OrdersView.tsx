@@ -190,7 +190,7 @@ export const OrdersView = ({ orders, onCreateOrder }: OrdersViewProps) => {
                     {selectedOrder.items.map((it: any, idx: number) => (
                       <div key={idx} className="flex justify-between items-center p-4 bg-vitalab-bg/30 rounded-xl border border-vitalab-border/50">
                         <div className="flex items-center gap-3">
-                          <div className="text-xl">{it.ico || '💊'}</div>
+                          <div className="hidden text-xl" />
                           <div>
                             <p className="text-sm font-bold text-vitalab-text">{it.name}</p>
                             <p className="text-[0.65rem] text-vitalab-text-muted font-bold uppercase tracking-wider">{it.dosePerCap}{it.unit} por cap</p>

@@ -52,7 +52,7 @@ export const PharmacistDashboard = ({ initialOrders }: { initialOrders: Order[] 
               <div className="bg-vitalab-bg rounded-[8px] p-3 mb-4 space-y-2">
                 {o.items.map((i, idx) => (
                   <div key={idx} className="flex justify-between items-center text-[0.78rem]">
-                    <span className="text-vitalab-text font-medium">{i.ico || '💊'} {i.name}</span>
+                    <span className="text-vitalab-text font-medium">{i.name}</span>
                     <span className="font-mono text-vitalab-text-secondary">{i.dosePerCap}{i.unit}</span>
                   </div>
                 ))}

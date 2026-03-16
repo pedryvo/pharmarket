@@ -34,7 +34,6 @@ model User {
 model Category {
   id       String    @id // slug (e.g., 'vitamina')
   label    String
-  ico      String    @default("💊")
   bg       String    @default("rgba(45,134,83,.12)")
   color    String    @default("#1f6340")
   products Product[]
@@ -46,7 +45,6 @@ model Product {
   category   Category    @relation(fields: [categoryId], references: [id])
   categoryId String
   unit       String      @default("mg") // mg, mcg, UI, etc.
-  ico        String?     @default("💊")
   desc       String?
   cpg        Float       // Cost per gram
   doses      Float[]     // Suggested dosages
@@ -98,7 +96,6 @@ model OrderItem {
   product    Product @relation(fields: [productId], references: [id])
   name       String
   unit       String
-  ico        String?
   dosePerCap Float
   cpg        Float
   factor     Float

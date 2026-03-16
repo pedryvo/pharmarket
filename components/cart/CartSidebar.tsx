@@ -107,7 +107,7 @@ export const CartSidebar = ({
       <div className="cart-items flex-1 overflow-y-auto p-5 py-3 bg-vitalab-bg/30">
         {items.length === 0 ? (
           <div className="cart-empty text-center py-10 px-4 text-vitalab-text-muted text-[0.83rem] leading-[1.8]">
-            <span className="cart-empty-ico text-[2.5rem] block mb-3 opacity-60">🧪</span>
+            <span className="cart-empty-ico text-[2.5rem] block mb-3 opacity-60">BAG</span>
             Monte sua fórmula selecionando ativos no catálogo.<br /><br />
             <span className="text-vitalab-green font-[700]">Dica:</span> Você pode combinar quantos ativos quiser em uma mesma fórmula.
           </div>
@@ -116,7 +116,7 @@ export const CartSidebar = ({
             <div key={it.id} className="cart-item bg-white border border-vitalab-border rounded-xl px-3 py-3 mb-2 transition-all duration-150 hover:border-vitalab-green/30 group relative shadow-sm">
               <div className="cart-item-top flex justify-between items-start mb-2">
                 <div className="cart-item-name text-[0.8rem] font-bold text-vitalab-text flex-1 pr-5 leading-[1.3]">
-                  {it.ico || '💊'} {it.name}
+                  {it.name}
                 </div>
                 <button 
                   onClick={() => onRemoveItem(it.id)}

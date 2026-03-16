@@ -23,4 +23,17 @@ export class UserRepository {
       orderBy: { createdAt: 'desc' }
     })
   }
+
+  static async update(id: string, data: Prisma.UserUpdateInput) {
+    return prisma.user.update({
+      where: { id },
+      data
+    })
+  }
+
+  static async delete(id: string) {
+    return prisma.user.delete({
+      where: { id }
+    })
+  }
 }

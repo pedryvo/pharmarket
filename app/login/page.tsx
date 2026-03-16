@@ -13,14 +13,21 @@ export default async function LoginPage() {
 
   async function handleLogin(email: string, pass: string) {
     "use server";
-    const user = await AuthService.login(email, pass);
-    if (!user) {
-      throw new Error('Email ou senha incorretos');
+    try {
+      const user = await AuthService.login(email, pass);
+      if (!user) {
+        return { success: false, error: 'Email ou senha incorretos' };
+      }
+      
+      // Redirect after successful login
+      if (user.role === 'PHARMA') redirect('/pharmacist');
+      if (user.role === 'ADMIN') redirect('/admin');
+      redirect('/');
+      return { success: true };
+    } catch (e: any) {
+      if (e.message === 'NEXT_REDIRECT') throw e; // Let Next.js handle redirects
+      return { success: false, error: e.message || 'Erro ao realizar login' };
     }
-    
-    if (user.role === 'PHARMA') redirect('/pharmacist');
-    if (user.role === 'ADMIN') redirect('/admin');
-    redirect('/');
   }
 
   return (

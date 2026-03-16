@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Mail, Lock, Loader2, Leaf } from 'lucide-react';
 
 interface LoginFormProps {
-  onLogin: (email: string, pass: string) => Promise<void>;
+  onLogin: (email: string, pass: string) => Promise<{ success: boolean; error?: string }>;
 }
 
 export const LoginForm = ({ onLogin }: LoginFormProps) => {
@@ -20,10 +20,17 @@ export const LoginForm = ({ onLogin }: LoginFormProps) => {
     setLoading(true);
     setError(null);
     try {
-      await onLogin(email, password);
+      const result = await onLogin(email, password);
+      if (result && !result.success) {
+        setError(result.error || 'Credenciais inválidas');
+      }
     } catch (err: any) {
-      setError(err.message || 'Credenciais inválidas. Tente admin@admin.com / admin123');
+      if (err.message !== 'NEXT_REDIRECT') {
+        setError(err.message || 'Erro ao realizar login');
+      }
     } finally {
+      // Small delay to allow redirect to happen if success
+      // Or just set loading false if we have an error
       setLoading(false);
     }
   };

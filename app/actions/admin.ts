@@ -107,6 +107,12 @@ export async function deleteOrderAction(id: string) {
 }
 
 // Users
+export async function createUserAction(data: any) {
+  await ensureAdmin();
+  await AdminService.createUser(data);
+  revalidatePath('/admin');
+}
+
 export async function updateUserAction(id: string, data: any) {
   await ensureAdmin();
   await AdminService.updateUser(id, data);

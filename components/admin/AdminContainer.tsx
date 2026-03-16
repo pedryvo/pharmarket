@@ -58,6 +58,8 @@ import {
 import { productFormSchema } from '@/validators/product.validator';
 import { partnerFormSchema } from '@/validators/partner.validator';
 import { categorySchema } from '@/validators/category.validator';
+import { userFormSchema, userUpdateSchema } from '@/validators/user.validator';
+import { createUserAction } from '@/app/actions/admin';
 
 interface AdminContainerProps {
   session: any;
@@ -223,12 +225,8 @@ export function AdminContainer({ session, initialData }: AdminContainerProps) {
 
   const saveUser = async (id: string) => {
     try {
-      await updateUserAction(id, {
-        name: editValues.name,
-        email: editValues.email,
-        role: editValues.role,
-        phone: editValues.phone
-      });
+      const validated = userUpdateSchema.parse(editValues);
+      await updateUserAction(id, validated);
       setEditingId(null);
     } catch (e: any) {
       alert(e.message);
@@ -259,6 +257,9 @@ export function AdminContainer({ session, initialData }: AdminContainerProps) {
           pharmacistEmail: validated.pharmacistEmail,
           specs: validated.specsRaw
         });
+      } else if (activeTab === 'users') {
+        const validated = userFormSchema.parse(newValues);
+        await createUserAction(validated);
       }
       setShowCreateModal(false);
       setNewValues({});
@@ -335,15 +336,15 @@ export function AdminContainer({ session, initialData }: AdminContainerProps) {
               </Button>
             )}
 
-            {['categories', 'partners'].includes(activeTab) && (
+            {['categories', 'partners', 'users'].includes(activeTab) && (
               <Button 
                 onClick={() => {
-                   setNewValues({});
+                   setNewValues(activeTab === 'users' ? { role: 'CLIENT' } : {});
                    setShowCreateModal(true);
                 }}
                 className="bg-vitalab-green text-white font-black px-6 shadow-vitalab-md gap-2"
               >
-                <Plus size={18} /> Novo {activeTab === 'categories' ? 'Categoria' : 'Parceiro'}
+                <Plus size={18} /> Novo {activeTab === 'categories' ? 'Categoria' : activeTab === 'partners' ? 'Parceiro' : 'Usuário'}
               </Button>
             )}
           </div>
@@ -1054,6 +1055,34 @@ export function AdminContainer({ session, initialData }: AdminContainerProps) {
                 </div>
               </>
             )}
+            {activeTab === 'users' && (
+              <>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="uname" className="text-right text-xs font-bold uppercase tracking-widest opacity-70">Nome</Label>
+                  <Input id="uname" value={newValues.name} onChange={e => setNewValues({...newValues, name: e.target.value})} className="col-span-3 font-bold" />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="uemail" className="text-right text-xs font-bold uppercase tracking-widest opacity-70">E-mail</Label>
+                  <Input id="uemail" type="email" value={newValues.email} onChange={e => setNewValues({...newValues, email: e.target.value})} className="col-span-3 font-mono" />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="urole" className="text-right text-xs font-bold uppercase tracking-widest opacity-70">Nível</Label>
+                  <select id="urole" className="col-span-3 h-10 px-3 rounded-md border border-vitalab-border bg-white text-sm font-bold outline-none focus:border-vitalab-green" value={newValues.role} onChange={e => setNewValues({...newValues, role: e.target.value})}>
+                    <option value="CLIENT">CLIENT</option>
+                    <option value="PHARMA">PHARMA</option>
+                    <option value="ADMIN">ADMIN</option>
+                  </select>
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="uphone" className="text-right text-xs font-bold uppercase tracking-widest opacity-70">Telefone</Label>
+                  <Input id="uphone" value={newValues.phone} onChange={e => setNewValues({...newValues, phone: e.target.value})} className="col-span-3 font-mono" />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="upass" className="text-right text-xs font-bold uppercase tracking-widest opacity-70">Senha</Label>
+                  <Input id="upass" type="password" value={newValues.password} onChange={e => setNewValues({...newValues, password: e.target.value})} className="col-span-3" />
+                </div>
+              </>
+            )}
           </div>
           <DialogFooter>
             <Button onClick={handleCreate} className="bg-vitalab-green text-white font-black hover:bg-vitalab-green-text">Criar Registro</Button>
@@ -1168,6 +1197,10 @@ export function AdminContainer({ session, initialData }: AdminContainerProps) {
                 <div className="grid grid-cols-4 items-center gap-4">
                   <Label className="text-right text-xs font-bold uppercase tracking-widest opacity-70">Telefone</Label>
                   <Input value={editValues.phone || ''} onChange={e => setEditValues({...editValues, phone: e.target.value})} className="col-span-3 font-mono" />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label className="text-right text-xs font-bold uppercase tracking-widest opacity-70">Senha</Label>
+                  <Input type="password" placeholder="Deixe em branco para manter" value={editValues.password || ''} onChange={e => setEditValues({...editValues, password: e.target.value})} className="col-span-3" />
                 </div>
               </>
             )}

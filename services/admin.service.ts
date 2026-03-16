@@ -5,6 +5,7 @@ import { PlatformSettingRepository } from '@/repositories/platform-setting.repos
 import { UserRepository } from '@/repositories/user.repository';
 import { OrderRepository } from '@/repositories/order.repository';
 import type { Prisma } from '@prisma/client';
+import bcrypt from 'bcryptjs';
 
 export class AdminService {
   // Products
@@ -52,8 +53,22 @@ export class AdminService {
   }
 
   // Users
+  static async createUser(data: any) {
+    const hashedPassword = await bcrypt.hash(data.password, 10);
+    return UserRepository.create({
+      ...data,
+      password: hashedPassword
+    });
+  }
+
   static async updateUser(id: string, data: any) {
-    return UserRepository.update(id, data);
+    const updateData = { ...data };
+    if (data.password) {
+      updateData.password = await bcrypt.hash(data.password, 10);
+    } else {
+      delete updateData.password;
+    }
+    return UserRepository.update(id, updateData);
   }
 
   static async deleteUser(id: string) {

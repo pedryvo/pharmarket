@@ -7,16 +7,24 @@ neonConfig.webSocketConstructor = ws
 neonConfig.pipelineConnect = false
 
 const prismaClientSingleton = () => {
-  const connectionString = `${process.env.DATABASE_URL || ''}`
-  console.log('DB INIT: URL length:', connectionString.length, 'ends with:', connectionString.slice(-10))
+  const connectionString = process.env.DATABASE_URL
   
   if (!connectionString) {
-    console.warn('DB INIT: DATABASE_URL is missing!')
+    console.error('DB INIT ERROR: DATABASE_URL environment variable is missing!')
+    throw new Error('DATABASE_URL is required')
   }
 
-  const pool = new Pool({ connectionString })
-  const adapter = new PrismaNeon(pool as any)
-  return new PrismaClient({ adapter })
+  try {
+    console.log('DB INIT: Attempting connection to Neon...')
+    const pool = new Pool({ connectionString })
+    const adapter = new PrismaNeon(pool as any)
+    const client = new PrismaClient({ adapter })
+    console.log('DB INIT: PrismaClient initialized with Neon adapter.')
+    return client
+  } catch (err) {
+    console.error('DB INIT ERROR: Failed to initialize PrismaClient:', err)
+    throw err
+  }
 }
 
 declare global {

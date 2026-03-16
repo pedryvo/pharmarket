@@ -28,6 +28,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogDescription,
+  DialogFooter,
   DialogTrigger,
 } from "@/components/ui/dialog";
 import {
@@ -38,6 +39,22 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { DragDropContext, Droppable, Draggable, DroppableProps } from "@hello-pangea/dnd";
+
+const StrictModeDroppable = ({ children, ...props }: DroppableProps) => {
+  const [enabled, setEnabled] = useState(false);
+  useEffect(() => {
+    const animation = requestAnimationFrame(() => setEnabled(true));
+    return () => {
+      cancelAnimationFrame(animation);
+      setEnabled(false);
+    };
+  }, []);
+  if (!enabled) {
+    return null;
+  }
+  return <Droppable {...props}>{children}</Droppable>;
+};
 
 interface PharmacistContainerProps {
   currentUser: any;
@@ -50,6 +67,7 @@ export const PharmacistContainer = ({ currentUser, initialOrders }: PharmacistCo
   const [mounted, setMounted] = useState(false);
   const [summaryOrder, setSummaryOrder] = useState<any>(null);
   const [waOrder, setWaOrder] = useState<any>(null);
+  const [reviewOrder, setReviewOrder] = useState<any>(null);
   const [contactedOrders, setContactedOrders] = useState<Set<string>>(new Set());
 
   useEffect(() => {
@@ -76,14 +94,19 @@ export const PharmacistContainer = ({ currentUser, initialOrders }: PharmacistCo
     const clientName = o.client?.name || 'Cliente';
 
     if (o.status === 'APPROVED') {
-      msg = `✅ *VitaLab — ${partnerName}*\n\nOlá, *${clientName}*! 👋\n\nSua fórmula *${o.formulaName}* foi *APROVADA*! 🎉\n\n📋 *Composição:*\n${comp}\n\n🔹 ${o.caps} unidades · ${o.form || 'Cápsula'}\n💰 *Total: ${fBRL(o.total)}*\n\n${o.pharmacistNote ? `💬 _"${o.pharmacistNote}"_\n\n` : ''}Em breve entraremos em contato para confirmar prazo e pagamento.\n\nObrigado pela confiança! 🌿`;
+      if (o.fromStatus === 'COMPLETED' || o.fromStatus === 'ADJUSTMENT') {
+        msg = `🔄 *VitaLab — ${partnerName}*\n\nOlá, *${clientName}*!\n\nRepercutimos sua fórmula *${o.formulaName}*. Ela voltou para o status de *EM PREPARAÇÃO*. 🧪🌿\n\nAcompanhe as atualizações pelo nosso aplicativo. Obrigado!`;
+      } else {
+        msg = `✅ *VitaLab — ${partnerName}*\n\nOlá, *${clientName}*! 👋\n\nSua fórmula *${o.formulaName}* foi *APROVADA*! 🎉\n\n📋 *Composição:*\n${comp}\n\n🔹 ${o.caps} unidades · ${o.form || 'Cápsula'}\n💰 *Total: ${fBRL(o.total)}*\n\n${o.pharmacistNote ? `💬 _"${o.pharmacistNote}"_\n\n` : ''}Estamos iniciando a manipulação. Você será avisado assim que estiver pronta! 🧪🌿`;
+      }
     } else if (o.status === 'ADJUSTMENT') {
-      msg = `⚠️ *VitaLab — ${partnerName}*\n\nOlá, *${clientName}*!\n\nNosso farmacêutico analisou sua fórmula *${o.formulaName}* e solicita *ajustes*.\n\n💬 *Observação:*\n_"${o.pharmacistNote || note}"_\n\n📋 *Composição atual:*\n${comp}\n\nAcesse o app para solicitar uma nova fórmula ou entre em contato conosco. 💊`;
+      msg = `⚠️ *VitaLab — ${partnerName}*\n\nOlá, *${clientName}*!\n\nNosso farmacêutico analisou sua fórmula *${o.formulaName}* e solicita *ajustes*.\n\n💬 *Observação:*\n_"${o.pharmacistNote || note}"_\n\nAcesse o app para solicitar uma nova fórmula ou entre em contato conosco. 💊`;
     } else if (o.status === 'REVIEW') {
-      msg = `🔬 *VitaLab — ${partnerName}*\n\nOlá, *${clientName}*!\n\nRecebemos sua fórmula *${o.formulaName}* com ${o.items?.length || 0} ativo(s) para ${o.caps} unidades. ✓\n\nEm *revisão farmacêutica*. ⏳\n\nVocê será notificado assim que a análise for concluída.\n\nObrigado pela preferência! 🌱`;
+      msg = `🔬 *VitaLab — ${partnerName}*\n\nOlá, *${clientName}*!\n\nSuas fórmulas voltaram para *análise técnica*. ⏳\n\nAcompanhe o status pelo nosso aplicativo.\n\nObrigado! 🌱`;
+    } else if (o.status === 'COMPLETED') {
+      msg = `✨ *VitaLab — ${partnerName}*\n\nOlá, *${clientName}*! 🎉\n\nSua fórmula *${o.formulaName}* está *PRONTA* para retirada ou entrega!\n\n📞 Entre em contato agora para finalizar os detalhes de frete e pagamento.\n\nObrigado por escolher a VitaLab! 🌿🧪`;
     } else {
-      const statusLabel = o.status === 'COMPLETED' ? 'CONCLUÍDO' : o.status;
-      msg = `*VitaLab — ${partnerName}*\n\nOlá, *${clientName}*!\n\n*${o.formulaName}* — ${statusLabel}\n\nObrigado! 🌿`;
+      msg = `*VitaLab — ${partnerName}*\n\nSua fórmula *${o.formulaName}* teve o status atualizado para: *${o.status}*. 🌿`;
     }
     return msg;
   };
@@ -96,15 +119,53 @@ export const PharmacistContainer = ({ currentUser, initialOrders }: PharmacistCo
   };
 
   const pendingOrders = orders.filter(o => o.status === 'REVIEW');
-  const historyOrders = orders.filter(o => o.status !== 'REVIEW').slice(0, 10);
+  const preparationOrders = orders.filter(o => o.status === 'APPROVED');
+  const historyOrders = orders.filter(o => o.status === 'COMPLETED' || o.status === 'ADJUSTMENT').slice(0, 10);
 
   const handleAction = async (orderId: string, status: string) => {
     try {
       await updateOrderStatusAction(orderId, status as any, note);
-      setOrders(orders.map(o => o.id === orderId ? { ...o, status } : o));
+      const updatedOrders = orders.map(o => o.id === orderId ? { ...o, status, pharmacistNote: note } : o);
+      setOrders(updatedOrders);
       setNote('');
+      setReviewOrder(null);
+      toast.success(status === 'APPROVED' ? 'Pedido aprovado!' : status === 'COMPLETED' ? 'Pedido concluído!' : 'Ajuste solicitado!');
     } catch (e: any) {
-      alert(e.message);
+      toast.error(e.message || 'Erro ao processar ação');
+    }
+  };
+
+  const onDragEnd = async (result: any) => {
+    const { destination, source, draggableId } = result;
+
+    if (!destination) return;
+    if (destination.droppableId === source.droppableId && destination.index === source.index) return;
+
+    const orderId = draggableId;
+    const newStatus = destination.droppableId as any;
+    const order = orders.find(o => o.id === orderId);
+
+    if (!order) {
+      console.warn('Order not found during drag:', orderId);
+      return;
+    }
+
+    // Optimistic Update
+    const updatedOrders = orders.map(o => o.id === orderId ? { ...o, status: newStatus } : o);
+    setOrders(updatedOrders);
+    
+    console.log(`Moving order ${orderId} to ${newStatus}`);
+
+    try {
+      await updateOrderStatusAction(orderId, newStatus);
+      const updatedOrder = updatedOrders.find(o => o.id === orderId);
+      if (updatedOrder) {
+        setWaOrder({ ...updatedOrder, fromStatus: source.droppableId }); // Trigger WA Preview with context
+      }
+      toast.success(`Pedido movido para ${newStatus === 'REVIEW' ? 'Revisão' : newStatus === 'APPROVED' ? 'Preparação' : 'Histórico'}`);
+    } catch (e: any) {
+      setOrders(orders); // Revert
+      toast.error('Erro ao mover pedido');
     }
   };
 
@@ -163,185 +224,260 @@ export const PharmacistContainer = ({ currentUser, initialOrders }: PharmacistCo
           </Card>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Waiting Review Container */}
-          <Card className="flex flex-col bg-white border-vitalab-border shadow-vitalab-md overflow-hidden min-h-[600px]">
-            <div className="p-5 border-b border-vitalab-border bg-vitalab-bg/50 flex justify-between items-center">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-vitalab-orange/10 flex items-center justify-center text-vitalab-orange">
-                  <Clock size={18} />
+        {mounted ? (
+          <DragDropContext onDragEnd={onDragEnd}>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {/* Waiting Review Container */}
+              <Card className="flex flex-col bg-white border-vitalab-border shadow-vitalab-md overflow-hidden min-h-[600px]">
+                <div className="p-5 border-b border-vitalab-border bg-vitalab-bg/50 flex justify-between items-center">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-lg bg-vitalab-orange/10 flex items-center justify-center text-vitalab-orange">
+                      <Clock size={18} />
+                    </div>
+                    <div>
+                      <h2 className="text-[0.85rem] font-black text-vitalab-text uppercase tracking-wider">Aguardando Revisão</h2>
+                      <p className="text-[0.65rem] text-vitalab-text-secondary font-medium">Pedidos pendentes de análise técnica</p>
+                    </div>
+                  </div>
+                  <Badge className="bg-vitalab-orange text-white font-black text-[0.65rem] rounded-full px-2 py-0.5">
+                    {pendingOrders.length}
+                  </Badge>
                 </div>
-                <div>
-                  <h2 className="text-[0.85rem] font-black text-vitalab-text uppercase tracking-wider">Aguardando Revisão</h2>
-                  <p className="text-[0.65rem] text-vitalab-text-secondary font-medium">Pedidos pendentes de análise técnica</p>
-                </div>
-              </div>
-              <Badge className="bg-vitalab-orange text-white font-black text-[0.65rem] rounded-full px-2 py-0.5">
-                {pendingOrders.length}
-              </Badge>
-            </div>
 
-            <div className="flex-1 p-5 space-y-4 bg-vitalab-bg/20 overflow-y-auto max-h-[800px]">
-              {pendingOrders.length === 0 ? (
-                <div className="h-full flex flex-col items-center justify-center py-20 text-vitalab-text-muted">
-                  <Beaker size={40} className="mb-4 opacity-10" />
-                  <p className="text-[0.75rem] font-medium">Nenhum pedido pendente</p>
-                </div>
-              ) : (
-                pendingOrders.map(order => (
-                  <Card key={order.id} className="bg-white border-vitalab-border hover:border-vitalab-orange/30 shadow-vitalab-sm overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-300">
-                    <div className="p-5 space-y-4">
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <div className="font-black text-vitalab-text text-[0.8rem]">{order.client?.name || 'Cliente'}</div>
-                          <div className="text-sm font-black text-vitalab-green">{order.formulaName}</div>
-                          <div className="text-[0.65rem] text-vitalab-text-muted mt-1 uppercase tracking-wider font-bold">
-                            {order.id} · {mounted ? new Date(order.date).toLocaleString() : '...'} · {order.caps} un
-                          </div>
+                <StrictModeDroppable droppableId="REVIEW">
+                  {(provided) => (
+                    <div 
+                      {...provided.droppableProps}
+                      ref={provided.innerRef}
+                      className="flex-1 p-5 space-y-2 bg-vitalab-bg/20 overflow-y-auto max-h-[800px]"
+                    >
+                      {pendingOrders.length === 0 ? (
+                        <div className="h-full flex flex-col items-center justify-center py-20 text-vitalab-text-muted">
+                          <Beaker size={40} className="mb-4 opacity-10" />
+                          <p className="text-[0.75rem] font-medium">Nenhum pedido pendente</p>
                         </div>
-                        <div className="flex flex-col items-end gap-1">
-                          <Badge variant="outline" className="bg-vitalab-orange/5 text-vitalab-orange border-vitalab-orange/20 font-black text-[0.6rem] px-1.5 py-0">
-                            Pendente
-                          </Badge>
-                          {contactedOrders.has(order.id) && (
-                            <div className="text-[0.6rem] font-black text-vitalab-green flex items-center gap-1">
-                              <CheckCircle2 size={10} /> CONTACTADO
+                      ) : (
+                        pendingOrders.map((order, index) => (
+                          <Draggable key={order.id} draggableId={order.id} index={index}>
+                            {(provided, snapshot) => (
+                          <div 
+                            ref={provided.innerRef}
+                            {...provided.draggableProps}
+                            {...provided.dragHandleProps}
+                            style={{
+                              ...provided.draggableProps.style,
+                              userSelect: 'none',
+                              opacity: snapshot.isDragging ? 0.9 : 1,
+                              transform: provided.draggableProps.style?.transform,
+                            }}
+                            onClick={() => {
+                              setReviewOrder(order);
+                              setNote(order.pharmacistNote || '');
+                            }}
+                            className="w-full text-left bg-white border border-vitalab-border hover:border-vitalab-orange/40 hover:shadow-vitalab-s transition-all p-4 rounded-xl group flex items-center justify-between cursor-pointer active:scale-[0.98]"
+                          >
+                            <div className="flex items-center gap-4">
+                              <div className="w-10 h-10 rounded-lg bg-vitalab-orange/10 flex items-center justify-center text-vitalab-orange group-hover:scale-110 transition-transform">
+                                <Beaker size={18} />
+                              </div>
+                              <div>
+                                <div className="font-bold text-vitalab-text text-[0.8rem] group-hover:text-vitalab-orange transition-colors">
+                                  {order.formulaName}
+                                </div>
+                                <div className="text-[0.65rem] text-vitalab-text-muted font-bold flex items-center gap-2 mt-0.5">
+                                  <span>{order.client?.name}</span>
+                                  <span className="opacity-30">•</span>
+                                  <span>{order.caps} un</span>
+                                </div>
+                              </div>
                             </div>
-                          )}
+                            <div className="text-right flex flex-col items-end gap-1.5">
+                              <div className="text-[0.75rem] font-black text-vitalab-orange">{fBRL(order.total)}</div>
+                              <div className="flex items-center gap-1.5">
+                                {contactedOrders.has(order.id) && <CheckCircle2 size={12} className="text-vitalab-green" />}
+                                <ChevronRight size={14} className="text-vitalab-text-muted h-4 w-4 opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all" />
+                              </div>
+                            </div>
+                          </div>
+                            )}
+                          </Draggable>
+                        ))
+                      )}
+                      {provided.placeholder}
+                    </div>
+                  )}
+                </StrictModeDroppable>
+              </Card>
+
+              {/* In Preparation Container */}
+              <Card className="flex flex-col bg-white border-vitalab-border shadow-vitalab-md overflow-hidden min-h-[600px]">
+                <div className="p-4 border-b border-vitalab-border bg-vitalab-bg/50 flex justify-between items-center">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center text-blue-600">
+                      <Beaker size={16} />
+                    </div>
+                    <div>
+                      <h2 className="text-[0.75rem] font-black text-vitalab-text uppercase tracking-wider">Em Preparação</h2>
+                      <p className="text-[0.6rem] text-vitalab-text-secondary font-medium">Fórmulas em manipulação</p>
+                    </div>
+                  </div>
+                  <Badge className="bg-blue-500 text-white font-black text-[0.65rem] rounded-full px-2 py-0.5">
+                    {preparationOrders.length}
+                  </Badge>
+                </div>
+
+                <StrictModeDroppable droppableId="APPROVED">
+                  {(provided) => (
+                    <div 
+                      {...provided.droppableProps}
+                      ref={provided.innerRef}
+                      className="flex-1 p-4 space-y-2 bg-vitalab-bg/20 overflow-y-auto max-h-[800px]"
+                    >
+                      {preparationOrders.length === 0 ? (
+                        <div className="h-full flex flex-col items-center justify-center py-20 text-vitalab-text-muted">
+                          <div className="text-xl opacity-10 mb-2">🌿</div>
+                          <p className="text-[0.7rem] font-medium">Fila limpa</p>
                         </div>
-                      </div>
-
-                      <div className="flex justify-between items-center py-1.5 font-black text-vitalab-text border-t border-dashed border-vitalab-border bg-vitalab-bg/30 -mx-5 px-5">
-                        <span className="text-[0.65rem] uppercase tracking-wider text-vitalab-text-muted">Total</span>
-                        <span className="text-[0.9rem] font-black text-vitalab-green">{fBRL(order.total)}</span>
-                      </div>
-
-                      <div className="space-y-3">
-                         <Textarea 
-                          placeholder="Observação para o cliente..."
-                          className="bg-vitalab-bg border-vitalab-border focus:bg-white min-h-[60px] text-[0.75rem] rounded-lg p-3"
-                          value={note}
-                          onChange={e => setNote(e.target.value)}
-                         />
-                         <div className="grid grid-cols-2 gap-2">
-                            <Button 
-                              className="bg-vitalab-green hover:bg-vitalab-green-text text-white font-black h-9 text-[0.75rem] rounded-lg shadow-vitalab-sm"
-                              onClick={() => handleAction(order.id, 'APPROVED')}
-                            >
-                              ✓ Aprovar
-                            </Button>
-                            <Button 
-                              variant="outline" 
-                              className="border-blue-100 text-blue-600 hover:bg-blue-50 font-black h-9 text-[0.75rem] rounded-lg"
-                              onClick={() => handleAction(order.id, 'ADJUSTMENT')}
-                            >
-                              Revisar
-                            </Button>
-                         </div>
-                         <div className="flex gap-1.5 pt-1 border-t border-dashed border-vitalab-border">
-                              <Button 
-                                variant="outline" 
-                                size="sm"
-                                className="flex-1 border-vitalab-border text-vitalab-text-muted hover:text-vitalab-green font-bold text-[0.6rem] h-8 px-2"
-                                onClick={() => setSummaryOrder(order)}
-                              >
-                                <ClipboardList size={14} className="mr-1.5"/> RESUMO
-                              </Button>
-                              <Button 
-                                variant="outline" 
-                                size="sm"
-                                className="flex-1 border-vitalab-border text-vitalab-text-muted hover:text-vitalab-green font-bold text-[0.6rem] h-8 px-2"
-                                onClick={() => setWaOrder(order)}
-                              >
-                                <MessageSquare size={14} className="mr-1.5"/> WHATSAPP
-                              </Button>
-                              <Button 
-                                variant="outline" 
-                                size="icon" 
-                                className="h-8 w-8 shrink-0 border-vitalab-border text-vitalab-text-muted hover:text-vitalab-green"
-                              >
-                                <Printer size={14}/>
-                              </Button>
-                         </div>
-                      </div>
+                      ) : (
+                        preparationOrders.map((order, index) => (
+                          <Draggable key={order.id} draggableId={order.id} index={index}>
+                            {(provided, snapshot) => (
+                          <div 
+                            ref={provided.innerRef}
+                            {...provided.draggableProps}
+                            {...provided.dragHandleProps}
+                            style={{
+                              ...provided.draggableProps.style,
+                              userSelect: 'none',
+                              opacity: snapshot.isDragging ? 0.9 : 1,
+                              transform: provided.draggableProps.style?.transform,
+                            }}
+                            onClick={() => setSummaryOrder(order)}
+                            className="w-full text-left bg-white border border-vitalab-border hover:border-vitalab-green/40 hover:shadow-vitalab-s transition-all p-4 rounded-xl group flex items-center justify-between cursor-pointer active:scale-[0.98]"
+                          >
+                            <div className="flex items-center gap-3">
+                              <div className="w-9 h-9 rounded-lg bg-blue-500/10 flex items-center justify-center text-blue-600 group-hover:scale-110 transition-transform">
+                                <Beaker size={16} />
+                              </div>
+                              <div>
+                                <div className="font-bold text-vitalab-text text-[0.75rem] group-hover:text-blue-600 transition-colors">
+                                  {order.formulaName}
+                                </div>
+                                <div className="text-[0.6rem] text-vitalab-text-muted font-bold flex items-center gap-1.5 mt-0.5">
+                                  <span>{order.client?.name}</span>
+                                  <span className="opacity-30">•</span>
+                                  <span>{order.caps} un</span>
+                                </div>
+                              </div>
+                            </div>
+                            <div className="text-right flex flex-col items-end gap-1">
+                              <div className="text-[0.7rem] font-black text-blue-600">{fBRL(order.total)}</div>
+                              <ChevronRight size={12} className="text-vitalab-text-muted opacity-0 group-hover:opacity-100 transition-all" />
+                            </div>
+                          </div>
+                            )}
+                          </Draggable>
+                        ))
+                      )}
+                      {provided.placeholder}
                     </div>
-                  </Card>
-                ))
-              )}
-            </div>
-          </Card>
+                  )}
+                </StrictModeDroppable>
+              </Card>
 
-          {/* History Container */}
-          <Card className="flex flex-col bg-white border-vitalab-border shadow-vitalab-md overflow-hidden min-h-[600px]">
-            <div className="p-5 border-b border-vitalab-border bg-vitalab-bg/50 flex justify-between items-center">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-vitalab-green/10 flex items-center justify-center text-vitalab-green">
-                  <BarChart3 size={18} />
+              {/* History Container */}
+              <Card className="flex flex-col bg-white border-vitalab-border shadow-vitalab-md overflow-hidden min-h-[600px]">
+                <div className="p-4 border-b border-vitalab-border bg-vitalab-bg/50 flex justify-between items-center">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-lg bg-slate-500/10 flex items-center justify-center text-slate-600">
+                      <ClipboardList size={16} />
+                    </div>
+                    <div>
+                      <h2 className="text-[0.75rem] font-black text-vitalab-text uppercase tracking-wider">Histórico</h2>
+                      <p className="text-[0.6rem] text-vitalab-text-secondary font-medium">Pedidos concluídos ou ajustados</p>
+                    </div>
+                  </div>
+                  <Badge className="bg-slate-500 text-white font-black text-[0.65rem] rounded-full px-2 py-0.5">
+                    {historyOrders.length}
+                  </Badge>
                 </div>
-                <div>
-                  <h2 className="text-[0.85rem] font-black text-vitalab-text uppercase tracking-wider">Histórico</h2>
-                  <p className="text-[0.65rem] text-vitalab-text-secondary font-medium">Pedidos processados recentemente</p>
-                </div>
-              </div>
-              <Badge className="bg-vitalab-green text-white font-black text-[0.65rem] rounded-full px-2 py-0.5">
-                {historyOrders.length}
-              </Badge>
-            </div>
 
-            <div className="flex-1 p-5 space-y-3 bg-vitalab-bg/20 overflow-y-auto max-h-[800px]">
-              {historyOrders.length === 0 ? (
-                <div className="h-full flex flex-col items-center justify-center py-20 text-vitalab-text-muted">
-                  <div className="text-2xl opacity-10 mb-2">📋</div>
-                  <p className="text-[0.75rem] font-medium">Histórico vazio</p>
-                </div>
-              ) : (
-                historyOrders.map(order => (
-                  <Card key={order.id} className="p-4 bg-white border-vitalab-border shadow-sm hover:border-vitalab-green/30 transition-all group">
-                    <div className="flex justify-between items-center">
-                      <div>
-                        <div className="font-bold text-[0.85rem] text-vitalab-text group-hover:text-vitalab-green transition-colors">{order.formulaName}</div>
-                        <div className="text-[0.65rem] text-vitalab-text-muted font-bold mt-0.5">
-                          {order.client?.name} · {order.id} · {mounted ? new Date(order.date).toLocaleDateString() : '...'}
+                <StrictModeDroppable droppableId="COMPLETED">
+                  {(provided) => (
+                    <div 
+                      {...provided.droppableProps}
+                      ref={provided.innerRef}
+                      className="flex-1 p-4 space-y-2 bg-vitalab-bg/20 overflow-y-auto max-h-[800px]"
+                    >
+                      {historyOrders.length === 0 ? (
+                        <div className="h-full flex flex-col items-center justify-center py-20 text-vitalab-text-muted">
+                          <div className="text-2xl opacity-10 mb-2">📋</div>
+                          <p className="text-[0.75rem] font-medium">Histórico vazio</p>
                         </div>
-                      </div>
-                      <div className="text-right">
-                        <Badge variant="outline" className={`text-[0.6rem] px-1.5 py-0 font-black ${
-                          order.status === 'APPROVED' ? 'bg-vitalab-green/5 text-vitalab-green border-vitalab-green/10' : 'bg-vitalab-bg text-vitalab-text-muted border-vitalab-border'
-                        }`}>
-                          {order.status}
-                        </Badge>
-                        <div className="font-mono font-bold text-vitalab-orange text-[0.75rem] mt-1">{fBRL(order.total)}</div>
-                      </div>
+                      ) : (
+                        historyOrders.map((order, index) => (
+                          <Draggable key={order.id} draggableId={order.id} index={index}>
+                            {(provided, snapshot) => (
+                          <div 
+                            ref={provided.innerRef}
+                            {...provided.draggableProps}
+                            {...provided.dragHandleProps}
+                            style={{
+                              ...provided.draggableProps.style,
+                              userSelect: 'none',
+                              opacity: snapshot.isDragging ? 0.9 : 1,
+                              transform: provided.draggableProps.style?.transform,
+                            }}
+                            onClick={() => setSummaryOrder(order)}
+                            className="w-full text-left bg-white border border-vitalab-border hover:border-vitalab-green/40 hover:shadow-vitalab-s transition-all p-4 rounded-xl group flex items-center justify-between cursor-pointer active:scale-[0.98]"
+                          >
+                            <div className="flex items-center gap-4">
+                              <div className={`w-10 h-10 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform ${
+                                order.status === 'APPROVED' ? 'bg-vitalab-green/10 text-vitalab-green' : 'bg-vitalab-bg text-vitalab-text-muted'
+                              }`}>
+                                <CheckCircle2 size={18} />
+                              </div>
+                              <div>
+                                <div className="font-bold text-vitalab-text text-[0.8rem] group-hover:text-vitalab-green transition-colors">
+                                  {order.formulaName}
+                                </div>
+                                <div className="text-[0.65rem] text-vitalab-text-muted font-bold flex items-center gap-2 mt-0.5">
+                                  <span>{order.client?.name}</span>
+                                  <span className="opacity-30">•</span>
+                                  <span className={`${
+                                    order.status === 'APPROVED' ? 'text-vitalab-green' : 'text-blue-500'
+                                  }`}>{order.status}</span>
+                                </div>
+                              </div>
+                            </div>
+                            <div className="text-right flex flex-col items-end gap-1.5">
+                              <div className="text-[0.75rem] font-bold text-vitalab-text">{fBRL(order.total)}</div>
+                              <ChevronRight size={14} className="text-vitalab-text-muted h-4 w-4 opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all" />
+                            </div>
+                          </div>
+                            )}
+                          </Draggable>
+                        ))
+                      )}
+                      {provided.placeholder}
                     </div>
-                    <div className="flex gap-2 mt-4 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        className="flex-1 border-vitalab-border text-vitalab-text-muted hover:text-vitalab-green font-bold text-[0.6rem] h-7 px-2"
-                        onClick={() => setSummaryOrder(order)}
-                      >
-                        <ExternalLink size={12} className="mr-1.5"/> DETALHES
-                      </Button>
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        className="flex-1 border-vitalab-border text-vitalab-text-muted hover:text-vitalab-green font-bold text-[0.6rem] h-7 px-2"
-                        onClick={() => setWaOrder(order)}
-                      >
-                        <MessageSquare size={12} className="mr-1.5"/> WHATSAPP
-                      </Button>
-                    </div>
-                  </Card>
-                ))
-              )}
+                  )}
+                </StrictModeDroppable>
+              </Card>
             </div>
-          </Card>
-        </div>
+          </DragDropContext>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-pulse">
+            <Card className="min-h-[600px] bg-white/50 border-vitalab-border" />
+            <Card className="min-h-[600px] bg-white/50 border-vitalab-border" />
+            <Card className="min-h-[600px] bg-white/50 border-vitalab-border" />
+          </div>
+        )}
       </main>
 
       {/* Summary Modal */}
       <Dialog open={!!summaryOrder} onOpenChange={(open) => !open && setSummaryOrder(null)}>
-        <DialogContent className="max-w-6xl w-[95vw] p-10 overflow-visible">
+        <DialogContent showCloseButton={false} className="max-w-6xl w-[95vw] p-10 overflow-visible">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <ClipboardList className="text-vitalab-green" />
@@ -422,18 +558,36 @@ export const PharmacistContainer = ({ currentUser, initialOrders }: PharmacistCo
                 </div>
               )}
               
-              <div className="flex justify-end">
-                <Button 
-                  variant="outline" 
-                  className="gap-2 border-vitalab-border text-vitalab-text-muted hover:text-vitalab-green"
-                  onClick={() => {
-                    const waOrderToOpen = summaryOrder;
-                    setSummaryOrder(null);
-                    setWaOrder(waOrderToOpen);
-                  }}
-                >
-                  <MessageSquare size={16} /> Abrir Preview WhatsApp
-                </Button>
+              <div className="flex justify-between items-center gap-3 pt-2">
+                <div className="flex gap-2">
+                  <Button 
+                    variant="outline" 
+                    className="gap-2 border-vitalab-border text-vitalab-text-muted hover:text-vitalab-green h-9 text-xs rounded-xl"
+                    onClick={() => {
+                      const waOrderToOpen = summaryOrder;
+                      setSummaryOrder(null);
+                      setWaOrder(waOrderToOpen);
+                    }}
+                  >
+                    <MessageSquare size={14} /> Preview WhatsApp
+                  </Button>
+                  <Button 
+                    variant="ghost" 
+                    className="h-9 px-4 font-black text-[0.65rem] text-vitalab-text-muted hover:bg-vitalab-bg rounded-xl"
+                    onClick={() => setSummaryOrder(null)}
+                  >
+                    Fechar
+                  </Button>
+                </div>
+                
+                {summaryOrder.status === 'APPROVED' && (
+                  <Button 
+                    className="flex-1 bg-vitalab-green hover:bg-vitalab-green-text text-white font-black h-10 rounded-xl shadow-vitalab-md gap-2"
+                    onClick={() => handleAction(summaryOrder.id, 'COMPLETED')}
+                  >
+                    ✓ Concluir Manipulação
+                  </Button>
+                )}
               </div>
             </div>
           )}
@@ -489,6 +643,128 @@ export const PharmacistContainer = ({ currentUser, initialOrders }: PharmacistCo
               </Button>
             </div>
           </div>
+        </DialogContent>
+      </Dialog>
+      {/* Review Modal */}
+      <Dialog open={!!reviewOrder} onOpenChange={(open) => !open && setReviewOrder(null)}>
+        <DialogContent showCloseButton={false} className="max-w-3xl w-[95vw] p-0 overflow-hidden border-none rounded-[2rem] bg-vitalab-bg">
+          <DialogHeader className="p-4 px-6 bg-white border-b border-vitalab-border flex-row items-center justify-between shrink-0">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 bg-vitalab-orange/10 rounded-lg flex items-center justify-center text-vitalab-orange">
+                <Beaker size={18} />
+              </div>
+              <div>
+                <DialogTitle className="text-lg font-black text-vitalab-text tracking-tight h-5">Análise Técnica</DialogTitle>
+                <DialogDescription className="text-[0.6rem] font-bold text-vitalab-text-muted uppercase tracking-widest mt-0.5 opacity-70">
+                  {reviewOrder?.formulaName} · {reviewOrder?.id}
+                </DialogDescription>
+              </div>
+            </div>
+            <Button variant="ghost" className="rounded-xl h-8 px-3 font-bold text-[0.7rem] text-vitalab-text-muted" onClick={() => setReviewOrder(null)}>Fechar</Button>
+          </DialogHeader>
+
+          <div className="flex-1 overflow-y-auto p-6 space-y-5">
+            {reviewOrder && (
+              <>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="p-4 bg-white border border-vitalab-border rounded-2xl shadow-sm">
+                    <span className="text-[0.55rem] font-black text-vitalab-text-muted uppercase tracking-[0.2em] mb-2 block">Dados do Cliente</span>
+                    <div className="space-y-0.5">
+                      <div className="font-black text-vitalab-text text-sm">{reviewOrder.client?.name}</div>
+                      <div className="text-[0.65rem] font-bold text-vitalab-text-secondary">{reviewOrder.client?.email || 'Nenhum e-mail'}</div>
+                      <div className="text-[0.65rem] font-bold text-vitalab-text-secondary">{reviewOrder.client?.phone || 'Sem telefone'}</div>
+                    </div>
+                  </div>
+                  <div className="p-4 bg-white border border-vitalab-border rounded-2xl shadow-sm">
+                    <span className="text-[0.55rem] font-black text-vitalab-text-muted uppercase tracking-[0.2em] mb-2 block">Configuração</span>
+                    <div className="space-y-0.5">
+                      <div className="font-black text-vitalab-green text-base">{reviewOrder.formulaName}</div>
+                      <div className="text-[0.6rem] font-bold text-vitalab-text-secondary uppercase tracking-widest">
+                        {reviewOrder.caps} UNIDADES · {reviewOrder.form || 'CÁPSULA'}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  <span className="text-[0.6rem] font-black text-vitalab-text-muted uppercase tracking-widest block pl-1">Composição e Análise</span>
+                  <div className="bg-white border border-vitalab-border rounded-xl overflow-hidden shadow-sm">
+                    <Table>
+                      <TableHeader>
+                        <TableRow className="bg-vitalab-bg/50 border-none">
+                          <TableHead className="font-bold text-vitalab-text uppercase text-[0.55rem] h-8 px-5">Ativo</TableHead>
+                          <TableHead className="font-bold text-vitalab-text uppercase text-[0.55rem] h-8">Dose/Cáps</TableHead>
+                          <TableHead className="font-bold text-vitalab-text uppercase text-[0.55rem] h-8 text-right px-5">MP Total</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {reviewOrder.items?.map((it: any) => (
+                          <TableRow key={it.id} className="border-vitalab-border/50">
+                            <TableCell className="font-black text-vitalab-text py-2 px-5 text-[0.75rem]">{it.name}</TableCell>
+                            <TableCell className="text-vitalab-text-secondary py-2 font-bold text-[0.75rem]">{it.dosePerCap}{it.unit}</TableCell>
+                            <TableCell className="text-right font-black text-vitalab-text py-2 px-5 text-[0.75rem]">{fG(it.dosePerCap * reviewOrder.caps)}</TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  <div className="flex justify-between items-end pl-1">
+                    <span className="text-[0.6rem] font-black text-vitalab-text-muted uppercase tracking-widest">Observações & Retorno</span>
+                  </div>
+                  <Textarea 
+                    placeholder="Descreva aqui sua avaliação técnica ou orientações para o cliente..."
+                    className="bg-white border-vitalab-border focus:ring-vitalab-green/20 min-h-[100px] text-[0.8rem] rounded-xl p-3 shadow-sm"
+                    value={note}
+                    onChange={e => setNote(e.target.value)}
+                  />
+                </div>
+              </>
+            )}
+          </div>
+
+          <DialogFooter className="p-6 bg-white border-t border-vitalab-border flex flex-col sm:flex-row gap-3">
+            <div className="flex gap-2 flex-1">
+              <Button 
+                variant="outline" 
+                className="rounded-xl border-vitalab-border h-9 px-4 font-black text-[0.65rem] gap-2 flex-1"
+                onClick={() => setReviewOrder(null)}
+              >
+                FECHAR
+              </Button>
+              <Button 
+                variant="outline" 
+                className="rounded-xl border-vitalab-border h-9 px-4 font-black text-[0.65rem] gap-2 flex-1"
+                onClick={() => setSummaryOrder(reviewOrder)}
+              >
+                <ClipboardList size={14} /> RESUMO
+              </Button>
+              <Button 
+                variant="outline" 
+                className="rounded-xl border-vitalab-border h-9 px-4 font-black text-[0.65rem] gap-2 flex-1"
+                onClick={() => setWaOrder(reviewOrder)}
+              >
+                <MessageSquare size={14} /> WHATSAPP
+              </Button>
+            </div>
+            <div className="flex gap-2 flex-1">
+              <Button 
+                variant="ghost" 
+                className="rounded-xl h-9 px-4 font-black text-[0.65rem] text-blue-600 hover:bg-blue-50 flex-1"
+                onClick={() => handleAction(reviewOrder.id, 'ADJUSTMENT')}
+              >
+                Solicitar Ajuste
+              </Button>
+              <Button 
+                className="bg-vitalab-green hover:bg-vitalab-green-text text-white font-black h-9 px-6 rounded-xl shadow-vitalab-sm gap-2 flex-1 text-[0.65rem]"
+                onClick={() => handleAction(reviewOrder.id, 'APPROVED')}
+              >
+                ✓ Aprovar para Manipulação
+              </Button>
+            </div>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

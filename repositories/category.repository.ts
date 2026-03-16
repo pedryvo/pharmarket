@@ -16,7 +16,7 @@ export class CategoryRepository {
     })
   }
 
-  static async create(data: { id: string; label: string; ico: string; bg: string; color: string }) {
+  static async create(data: { id: string; label: string; bg: string; color: string }) {
     return prisma.category.create({ data })
   }
 

@@ -1,10 +1,6 @@
 "use server";
 
-import { ProductRepository } from '@/repositories/product.repository';
-import { CategoryRepository } from '@/repositories/category.repository';
-import { PartnerRepository } from '@/repositories/partner.repository';
-import { PlatformSettingRepository } from '@/repositories/platform-setting.repository';
-import type { Prisma } from '@prisma/client';
+import { AdminService } from '@/services/admin.service';
 import { revalidatePath } from 'next/cache';
 import { AuthService } from '@/services/auth.service';
 
@@ -25,21 +21,21 @@ async function ensureStaff() {
 // Products
 export async function createProductAction(data: any) {
   await ensureAdmin();
-  await ProductRepository.create(data);
+  await AdminService.createProduct(data);
   revalidatePath('/');
   revalidatePath('/admin');
 }
 
 export async function updateProductAction(id: number, data: any) {
   await ensureAdmin();
-  await ProductRepository.update(id, data);
+  await AdminService.updateProduct(id, data);
   revalidatePath('/');
   revalidatePath('/admin');
 }
 
 export async function deleteProductAction(id: number) {
   await ensureAdmin();
-  await ProductRepository.delete(id);
+  await AdminService.deleteProduct(id);
   revalidatePath('/');
   revalidatePath('/admin');
 }
@@ -47,21 +43,21 @@ export async function deleteProductAction(id: number) {
 // Categories
 export async function createCategoryAction(data: any) {
   await ensureAdmin();
-  await CategoryRepository.create(data);
+  await AdminService.createCategory(data);
   revalidatePath('/');
   revalidatePath('/admin');
 }
 
 export async function updateCategoryAction(id: string, data: any) {
   await ensureAdmin();
-  await CategoryRepository.update(id, data);
+  await AdminService.updateCategory(id, data);
   revalidatePath('/');
   revalidatePath('/admin');
 }
 
 export async function deleteCategoryAction(id: string) {
   await ensureAdmin();
-  await CategoryRepository.delete(id);
+  await AdminService.deleteCategory(id);
   revalidatePath('/');
   revalidatePath('/admin');
 }
@@ -69,21 +65,21 @@ export async function deleteCategoryAction(id: string) {
 // Partners
 export async function createPartnerAction(data: any) {
   await ensureAdmin();
-  await PartnerRepository.create(data);
+  await AdminService.createPartner(data);
   revalidatePath('/');
   revalidatePath('/admin');
 }
 
 export async function updatePartnerAction(id: number, data: any) {
   await ensureAdmin();
-  await PartnerRepository.update(id, data);
+  await AdminService.updatePartner(id, data);
   revalidatePath('/');
   revalidatePath('/admin');
 }
 
 export async function deletePartnerAction(id: number) {
   await ensureAdmin();
-  await PartnerRepository.delete(id);
+  await AdminService.deletePartner(id);
   revalidatePath('/');
   revalidatePath('/admin');
 }
@@ -91,7 +87,7 @@ export async function deletePartnerAction(id: number) {
 // Settings
 export async function updateSettingsAction(data: any) {
   await ensureAdmin();
-  await PlatformSettingRepository.updateSettings(data);
+  await AdminService.updateSettings(data);
   revalidatePath('/');
   revalidatePath('/admin');
 }
@@ -99,23 +95,26 @@ export async function updateSettingsAction(data: any) {
 // Orders
 export async function updateOrderStatusAction(id: string, status: any, note?: string) {
   await ensureStaff();
-  const { OrderRepository } = await import('@/repositories/order.repository');
-  await OrderRepository.updateStatus(id, status, note);
+  await AdminService.updateOrderStatus(id, status, note);
   revalidatePath('/admin');
   revalidatePath('/pharmacist');
+}
+
+export async function deleteOrderAction(id: string) {
+  await ensureAdmin();
+  await AdminService.deleteOrder(id);
+  revalidatePath('/admin');
 }
 
 // Users
 export async function updateUserAction(id: string, data: any) {
   await ensureAdmin();
-  const { UserRepository } = await import('@/repositories/user.repository');
-  await UserRepository.update(id, data);
+  await AdminService.updateUser(id, data);
   revalidatePath('/admin');
 }
 
 export async function deleteUserAction(id: string) {
   await ensureAdmin();
-  const { UserRepository } = await import('@/repositories/user.repository');
-  await UserRepository.delete(id);
+  await AdminService.deleteUser(id);
   revalidatePath('/admin');
 }

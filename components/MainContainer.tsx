@@ -105,7 +105,6 @@ export const MainContainer = ({ initialData, currentUser }: MainContainerProps) 
       id: Date.now(),
       productId: product.id,
       name: product.name,
-      ico: product.ico,
       dosePerCap: defaultDose,
       unit: product.unit,
       cpg: product.cpg,

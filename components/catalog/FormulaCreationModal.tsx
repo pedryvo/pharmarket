@@ -29,7 +29,6 @@ import { fBRL } from '@/lib/utils';
 interface Category {
   id: string;
   label: string;
-  ico: string;
 }
 
 interface Product {
@@ -37,7 +36,6 @@ interface Product {
   name: string;
   categoryId: string;
   unit: string;
-  ico?: string | null;
   desc?: string | null;
   cpg: number;
   partnerId: number;
@@ -258,7 +256,7 @@ export const FormulaCreationModal = ({
                         ? 'bg-vitalab-green border-vitalab-green text-white shadow-vitalab-sm' 
                         : 'bg-white border-vitalab-border text-vitalab-text-muted hover:border-vitalab-green hover:text-vitalab-green'}`}
                   >
-                    {cat.ico} {cat.label}
+                    {cat.label}
                   </button>
                 ))}
               </div>
@@ -279,7 +277,7 @@ export const FormulaCreationModal = ({
                   >
                     <div>
                       <div className="flex justify-between items-start mb-3">
-                        <div className="w-10 h-10 bg-vitalab-bg rounded-xl flex items-center justify-center text-[10px] font-black">{p.ico || 'LAB'}</div>
+                        <div className="w-10 h-10 bg-vitalab-bg rounded-xl flex items-center justify-center text-[10px] font-black">LAB</div>
                         {isInCart && (
                           <div className="bg-vitalab-green text-white p-1 rounded-full">
                             <CheckCircle2 size={12} />
@@ -359,7 +357,7 @@ export const FormulaCreationModal = ({
                     {initialItems.map(it => (
                       <div key={it.id} className="bg-white border border-vitalab-border rounded-lg p-2.5 px-3 shadow-sm animate-in slide-in-from-right-2">
                         <div className="flex justify-between items-start mb-2">
-                          <span className="text-xs font-black text-vitalab-text truncate pr-4">{it.ico || '*'} {it.name}</span>
+                          <span className="text-xs font-black text-vitalab-text truncate pr-4">{it.name}</span>
                           <button onClick={() => onRemoveItem(it.id)} className="text-vitalab-text-secondary hover:text-red-500 transition-colors">
                             <Trash2 size={12} />
                           </button>

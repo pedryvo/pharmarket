@@ -10,7 +10,6 @@ import { Button } from '@/components/ui/button';
 interface Category {
   id: string;
   label: string;
-  ico: string;
   bg: string;
   color: string;
 }
@@ -20,7 +19,6 @@ interface Product {
   name: string;
   categoryId: string;
   unit: string;
-  ico?: string | null;
   desc?: string | null;
   cpg: number;
   category: Category;

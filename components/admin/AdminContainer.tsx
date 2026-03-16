@@ -52,8 +52,12 @@ import {
   deletePartnerAction,
   updateOrderStatusAction,
   updateUserAction,
-  deleteUserAction
+  deleteUserAction,
+  deleteOrderAction
 } from '@/app/actions/admin';
+import { productFormSchema } from '@/validators/product.validator';
+import { partnerFormSchema } from '@/validators/partner.validator';
+import { categorySchema } from '@/validators/category.validator';
 
 interface AdminContainerProps {
   session: any;
@@ -75,6 +79,71 @@ export function AdminContainer({ session, initialData }: AdminContainerProps) {
   const [editValues, setEditValues] = useState<any>({});
   const [showCreateModal, setShowCreateModal] = useState<boolean>(false);
   const [newValues, setNewValues] = useState<any>({});
+  const [selectedPartnerId, setSelectedPartnerId] = useState<number | null>(null);
+  
+  // Filtering & Pagination State
+  const [productSearch, setProductSearch] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 10;
+
+  // Reset page on tab change
+  const handleTabChange = (tab: Tab) => {
+    setActiveTab(tab);
+    setSelectedPartnerId(null);
+    setCurrentPage(1);
+    setProductSearch('');
+  };
+
+  const selectedPartner = initialData.partners.find(p => p.id === selectedPartnerId);
+  
+  // Filtered Products for selected partner
+  const filteredProducts = selectedPartnerId 
+    ? initialData.products.filter(p => {
+        const matchesPartner = p.partnerId === selectedPartnerId;
+        const matchesSearch = p.name.toLowerCase().includes(productSearch.toLowerCase()) || 
+                             (p.desc && p.desc.toLowerCase().includes(productSearch.toLowerCase()));
+        return matchesPartner && matchesSearch;
+      })
+    : [];
+
+  // Pagination helper
+  const paginate = (data: any[]) => {
+    const start = (currentPage - 1) * pageSize;
+    return data.slice(start, start + pageSize);
+  };
+
+  const PaginationUI = ({ totalItems }: { totalItems: number }) => {
+    const totalPages = Math.ceil(totalItems / pageSize);
+    if (totalPages <= 1) return null;
+
+    return (
+      <div className="flex items-center justify-between px-6 py-4 border-t border-vitalab-border bg-vitalab-bg/20">
+        <p className="text-[0.65rem] font-bold text-vitalab-text-muted uppercase tracking-widest">
+          Mostrando {(currentPage - 1) * pageSize + 1} - {Math.min(currentPage * pageSize, totalItems)} de {totalItems}
+        </p>
+        <div className="flex gap-2">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            disabled={currentPage === 1}
+            onClick={() => setCurrentPage(prev => prev - 1)}
+            className="h-8 font-black text-[0.65rem] border-vitalab-border"
+          >
+            Anterior
+          </Button>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            disabled={currentPage === totalPages}
+            onClick={() => setCurrentPage(prev => prev + 1)}
+            className="h-8 font-black text-[0.65rem] border-vitalab-border"
+          >
+            Próximo
+          </Button>
+        </div>
+      </div>
+    );
+  };
 
   const handleLogout = async () => {
     await logoutAction();
@@ -92,15 +161,15 @@ export function AdminContainer({ session, initialData }: AdminContainerProps) {
 
   const saveProduct = async (id: number) => {
     try {
+      const validated = productFormSchema.parse(editValues);
       await updateProductAction(id, {
-        cpg: parseFloat(editValues.cpg),
-        factor: editValues.factor ? parseFloat(editValues.factor) : null,
-        active: editValues.active,
-        name: editValues.name,
-        unit: editValues.unit,
-        desc: editValues.desc,
-        ico: editValues.ico,
-        doses: editValues.dosesRaw ? editValues.dosesRaw.split(',').map((d: string) => parseFloat(d.trim())).filter((d: number) => !isNaN(d)) : []
+        name: validated.name,
+        cpg: validated.cpg,
+        unit: validated.unit,
+        desc: validated.desc,
+        active: validated.active,
+        factor: validated.factor,
+        doses: validated.dosesRaw
       });
       setEditingId(null);
     } catch (e: any) {
@@ -111,8 +180,7 @@ export function AdminContainer({ session, initialData }: AdminContainerProps) {
   const saveCategory = async (id: string) => {
     try {
       await updateCategoryAction(id, {
-        label: editValues.label,
-        ico: editValues.ico
+        label: editValues.label
       });
       setEditingId(null);
     } catch (e: any) {
@@ -137,13 +205,15 @@ export function AdminContainer({ session, initialData }: AdminContainerProps) {
 
   const savePartner = async (id: number) => {
     try {
+      const validated = partnerFormSchema.parse(editValues);
       await updatePartnerAction(id, {
-        name: editValues.name,
-        city: editValues.city,
-        wa: editValues.wa,
-        rt: editValues.rt,
-        active: editValues.active,
-        specs: editValues.specsRaw ? editValues.specsRaw.split(',').map((s: string) => s.trim()).filter(Boolean) : []
+        name: validated.name,
+        city: validated.city,
+        wa: validated.wa,
+        rt: validated.rt,
+        pharmacistEmail: validated.pharmacistEmail,
+        active: validated.active,
+        specs: validated.specsRaw
       });
       setEditingId(null);
     } catch (e: any) {
@@ -168,24 +238,26 @@ export function AdminContainer({ session, initialData }: AdminContainerProps) {
   const handleCreate = async () => {
     try {
       if (activeTab === 'products') {
+        const validated = productFormSchema.parse(newValues);
         await createProductAction({
-          name: newValues.name,
-          cpg: parseFloat(newValues.cpg),
-          categoryId: newValues.categoryId,
-          unit: newValues.unit,
-          ico: newValues.ico || '🧪'
+          name: validated.name,
+          cpg: validated.cpg,
+          categoryId: validated.categoryId,
+          partnerId: selectedPartnerId,
+          unit: validated.unit
         });
       } else if (activeTab === 'categories') {
-        await createCategoryAction({
-          id: newValues.id,
-          label: newValues.label,
-          ico: newValues.ico || '📁'
-        });
+        const validated = categorySchema.parse(newValues);
+        await createCategoryAction(validated);
       } else if (activeTab === 'partners') {
+        const validated = partnerFormSchema.parse(newValues);
         await createPartnerAction({
-          name: newValues.name,
-          city: newValues.city,
-          wa: newValues.wa
+          name: validated.name,
+          city: validated.city,
+          wa: validated.wa,
+          rt: validated.rt,
+          pharmacistEmail: validated.pharmacistEmail,
+          specs: validated.specsRaw
         });
       }
       setShowCreateModal(false);
@@ -218,7 +290,7 @@ export function AdminContainer({ session, initialData }: AdminContainerProps) {
           ].map(item => (
             <button
               key={item.id}
-              onClick={() => setActiveTab(item.id as Tab)}
+              onClick={() => handleTabChange(item.id as Tab)}
               className={`w-full flex items-center gap-3 px-4 py-3 rounded-vitalab-lg font-bold text-sm transition-all ${
                 activeTab === item.id 
                   ? 'bg-vitalab-green text-white shadow-vitalab-md' 
@@ -248,15 +320,30 @@ export function AdminContainer({ session, initialData }: AdminContainerProps) {
               </p>
             </div>
 
-            {['products', 'categories', 'partners'].includes(activeTab) && (
+            {activeTab === 'products' && selectedPartnerId && (
               <Button 
                 onClick={() => {
-                   setNewValues(activeTab === 'products' ? { categoryId: initialData.categories[0]?.id } : {});
+                   setNewValues({ 
+                    categoryId: initialData.categories[0]?.id,
+                    unit: 'mg'
+                   });
                    setShowCreateModal(true);
                 }}
                 className="bg-vitalab-green text-white font-black px-6 shadow-vitalab-md gap-2"
               >
-                <Plus size={18} /> Novo {activeTab === 'products' ? 'Ativo' : activeTab === 'categories' ? 'Categoria' : 'Parceiro'}
+                <Plus size={18} /> Novo Ativo
+              </Button>
+            )}
+
+            {['categories', 'partners'].includes(activeTab) && (
+              <Button 
+                onClick={() => {
+                   setNewValues({});
+                   setShowCreateModal(true);
+                }}
+                className="bg-vitalab-green text-white font-black px-6 shadow-vitalab-md gap-2"
+              >
+                <Plus size={18} /> Novo {activeTab === 'categories' ? 'Categoria' : 'Parceiro'}
               </Button>
             )}
           </div>
@@ -322,91 +409,162 @@ export function AdminContainer({ session, initialData }: AdminContainerProps) {
           )}
 
           {activeTab === 'products' && (
-            <div className="bg-white rounded-vitalab-xl border border-vitalab-border shadow-vitalab-md overflow-hidden">
-              <Table>
-                <TableHeader className="bg-vitalab-bg/50">
-                  <TableRow className="hover:bg-transparent border-vitalab-border">
-                    <TableHead className="px-6 py-4 text-[0.65rem] uppercase font-black tracking-widest text-vitalab-text-muted">Ativo</TableHead>
-                    <TableHead className="px-6 py-4 text-[0.65rem] uppercase font-black tracking-widest text-vitalab-text-muted">Cat / Unit</TableHead>
-                    <TableHead className="px-6 py-4 text-[0.65rem] uppercase font-black tracking-widest text-vitalab-text-muted">Custo / g</TableHead>
-                    <TableHead className="px-6 py-4 text-[0.65rem] uppercase font-black tracking-widest text-vitalab-text-muted">Fator</TableHead>
-                    <TableHead className="px-6 py-4 text-[0.65rem] uppercase font-black tracking-widest text-vitalab-text-muted">Exemplo Preço</TableHead>
-                    <TableHead className="px-6 py-4 text-[0.65rem] uppercase font-black tracking-widest text-vitalab-text-muted text-center">Status</TableHead>
-                    <TableHead className="px-6 py-4 text-[0.65rem] uppercase font-black tracking-widest text-vitalab-text-muted text-right">Ações</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {initialData.products.map((p) => (
-                    <TableRow key={p.id} className={`group transition-colors border-vitalab-border ${!p.active ? 'opacity-50' : ''}`}>
-                      <TableCell className="px-6 py-4">
-                        <div className="flex items-center gap-3">
-                          <span className="text-xl bg-vitalab-bg w-10 h-10 flex items-center justify-center rounded-lg border border-vitalab-border group-hover:scale-110 transition-transform">
-                            {p.ico}
-                          </span>
-                          <div>
-                            <div className="font-bold text-vitalab-text text-sm leading-tight">{p.name}</div>
-                            {p.desc && <div className="text-[0.65rem] text-vitalab-text-muted line-clamp-1 max-w-[200px]">{p.desc}</div>}
+            <div className="space-y-6 animate-in fade-in duration-300">
+              {!selectedPartnerId ? (
+                <>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {paginate(initialData.partners).map(p => (
+                      <Card key={p.id} className="border-vitalab-border hover:shadow-vitalab-md transition-all group overflow-hidden">
+                        <div className="h-1 bg-vitalab-green/20 group-hover:bg-vitalab-green transition-colors" />
+                        <CardHeader>
+                          <CardTitle className="text-lg font-black text-vitalab-text">{p.name}</CardTitle>
+                          <CardDescription className="text-[0.7rem] uppercase tracking-wider font-bold">{p.city}</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="flex items-center gap-2 text-vitalab-text-muted text-xs">
+                            <Package size={14} className="text-vitalab-green" />
+                            <span className="font-bold">
+                              {initialData.products.filter(prod => prod.partnerId === p.id).length} Ativos cadastrados
+                            </span>
                           </div>
-                        </div>
-                      </TableCell>
-                      <TableCell className="px-6 py-4">
-                        <Badge variant="outline" className="text-[0.6rem] font-bold uppercase tracking-widest bg-vitalab-bg/50 border-vitalab-border text-vitalab-text-muted">
-                           {p.category.label}
-                        </Badge>
-                        <div className="text-[0.65rem] text-vitalab-text-muted font-bold mt-1 ml-1">{p.unit}</div>
-                      </TableCell>
-                      <TableCell className="px-6 py-4 font-mono font-bold text-xs text-vitalab-text">
-                        R$ {p.cpg.toFixed(4).replace('.', ',')}
-                      </TableCell>
-                      <TableCell className="px-6 py-4">
-                        <span className={`text-xs font-bold ${p.factor ? 'text-vitalab-orange' : 'text-vitalab-text-muted'}`}>
-                          {p.factor ? `${p.factor.toFixed(2)}x` : initialData.settings.factor.toFixed(2) + 'x'}
-                        </span>
-                      </TableCell>
-                      <TableCell className="px-6 py-4">
-                         <div className="text-xs font-bold text-red-500">
-                            R$ {(p.cpg * (p.factor || initialData.settings.factor)).toFixed(2).replace('.', ',')}
-                            <span className="text-[0.6rem] text-vitalab-text-muted ml-1 uppercase font-black">/ 500mg</span>
-                         </div>
-                      </TableCell>
-                      <TableCell className="px-6 py-4 text-center">
-                         <Badge className={`text-[0.6rem] font-black uppercase tracking-widest ${p.active ? 'bg-vitalab-green/10 text-vitalab-green hover:bg-vitalab-green/20' : 'bg-vitalab-bg text-vitalab-text-muted hover:bg-vitalab-bg/80'}`}>
-                            {p.active ? 'Ativo' : 'Inativo'}
-                         </Badge>
-                      </TableCell>
-                      <TableCell className="px-6 py-4 text-right">
-                        <div className="flex gap-1 justify-end opacity-0 group-hover:opacity-100 transition-opacity">
+                        </CardContent>
+                        <CardFooter>
                           <Button 
-                              variant="outline" 
-                              size="sm" 
-                              onClick={() => startEdit(p.id, { 
-                                cpg: p.cpg, 
-                                factor: p.factor, 
-                                active: p.active,
-                                name: p.name,
-                                unit: p.unit,
-                                ico: p.ico,
-                                desc: p.desc,
-                                dosesRaw: p.doses.join(', ')
-                              })}
-                              className="h-8 px-2 border-vitalab-border text-vitalab-text-muted hover:text-vitalab-green hover:border-vitalab-green font-bold text-[0.65rem] uppercase"
+                            onClick={() => setSelectedPartnerId(p.id)}
+                            className="w-full bg-vitalab-bg text-vitalab-text-muted hover:bg-vitalab-green hover:text-white font-black transition-colors"
                           >
-                              Editar
+                            Gerenciar Catálogo
                           </Button>
-                          <Button 
-                              variant="outline" 
-                              size="icon" 
-                              onClick={() => deleteProductAction(p.id)}
-                              className="h-8 w-8 border-vitalab-border text-vitalab-text-muted hover:text-red-500 hover:border-red-500"
-                          >
-                              <X size={14} />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                        </CardFooter>
+                      </Card>
+                    ))}
+                  </div>
+                  <PaginationUI totalItems={initialData.partners.length} />
+                </>
+              ) : (
+                <div className="space-y-6">
+                  <div className="flex items-center justify-between bg-white p-4 rounded-vitalab-lg border border-vitalab-border shadow-vitalab-sm">
+                    <div className="flex items-center gap-4">
+                      <Button variant="ghost" onClick={() => { setSelectedPartnerId(null); setCurrentPage(1); }} className="h-10 w-10 p-0 rounded-full hover:bg-vitalab-bg">
+                        <ArrowLeft size={20} />
+                      </Button>
+                      <div>
+                        <h2 className="font-black text-vitalab-text">{selectedPartner?.name}</h2>
+                        <p className="text-[0.65rem] text-vitalab-text-muted font-bold uppercase tracking-widest">{selectedPartner?.city}</p>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center gap-4 flex-1 max-w-md mx-8">
+                       <div className="relative w-full">
+                          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-vitalab-text-muted" size={16} />
+                          <Input 
+                            placeholder="Buscar ativos..." 
+                            className="pl-10 h-10 border-vitalab-border focus:border-vitalab-green font-bold text-sm"
+                            value={productSearch}
+                            onChange={e => { setProductSearch(e.target.value); setCurrentPage(1); }}
+                          />
+                       </div>
+                    </div>
+
+                    <Badge className="bg-vitalab-green/10 text-vitalab-green border-vitalab-green/20 font-black">
+                      {filteredProducts.length} ATIVOS
+                    </Badge>
+                  </div>
+
+                  <div className="bg-white rounded-vitalab-xl border border-vitalab-border shadow-vitalab-md overflow-hidden">
+                    <Table>
+                      <TableHeader className="bg-vitalab-bg/50">
+                        <TableRow className="hover:bg-transparent border-vitalab-border">
+                          <TableHead className="px-6 py-4 text-[0.65rem] uppercase font-black tracking-widest text-vitalab-text-muted">Ativo</TableHead>
+                          <TableHead className="px-6 py-4 text-[0.65rem] uppercase font-black tracking-widest text-vitalab-text-muted">Cat / Unit</TableHead>
+                          <TableHead className="px-6 py-4 text-[0.65rem] uppercase font-black tracking-widest text-vitalab-text-muted">Custo / g</TableHead>
+                          <TableHead className="px-6 py-4 text-[0.65rem] uppercase font-black tracking-widest text-vitalab-text-muted">Fator</TableHead>
+                          <TableHead className="px-6 py-4 text-[0.65rem] uppercase font-black tracking-widest text-vitalab-text-muted">Exemplo Preço</TableHead>
+                          <TableHead className="px-6 py-4 text-[0.65rem] uppercase font-black tracking-widest text-vitalab-text-muted text-center">Status</TableHead>
+                          <TableHead className="px-6 py-4 text-[0.65rem] uppercase font-black tracking-widest text-vitalab-text-muted text-right">Ações</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {filteredProducts.length === 0 ? (
+                          <TableRow>
+                            <TableCell colSpan={7} className="px-6 py-12 text-center text-vitalab-text-muted font-bold italic">
+                              {productSearch ? 'Nenhum ativo encontrado para esta busca.' : 'Nenhum ativo cadastrado para esta farmácia.'}
+                            </TableCell>
+                          </TableRow>
+                        ) : (
+                          paginate(filteredProducts).map((p) => (
+                            <TableRow key={p.id} className={`group transition-colors border-vitalab-border ${!p.active ? 'opacity-50' : ''}`}>
+                              <TableCell className="px-6 py-4">
+                                <div className="flex items-center gap-3">
+                                  <div className="bg-vitalab-green/20 w-1 h-10 group-hover:bg-vitalab-green transition-colors" />
+                                  <div>
+                                    <div className="font-bold text-vitalab-text text-sm leading-tight">{p.name}</div>
+                                    {p.desc && <div className="text-[0.65rem] text-vitalab-text-muted line-clamp-1 max-w-[200px] font-medium">{p.desc}</div>}
+                                  </div>
+                                </div>
+                              </TableCell>
+                              <TableCell className="px-6 py-4">
+                                <Badge variant="outline" className="text-[0.6rem] font-bold uppercase tracking-widest bg-vitalab-bg/50 border-vitalab-border text-vitalab-text-muted">
+                                  {p.category.label}
+                                </Badge>
+                                <div className="text-[0.65rem] text-vitalab-text-muted font-bold mt-1 ml-1">{p.unit}</div>
+                              </TableCell>
+                              <TableCell className="px-6 py-4 font-mono font-bold text-xs text-vitalab-text">
+                                R$ {p.cpg.toFixed(4).replace('.', ',')}
+                              </TableCell>
+                              <TableCell className="px-6 py-4">
+                                <span className={`text-xs font-bold ${p.factor ? 'text-vitalab-orange' : 'text-vitalab-text-muted'}`}>
+                                  {p.factor ? `${p.factor.toFixed(2)}x` : initialData.settings.factor.toFixed(2) + 'x'}
+                                </span>
+                              </TableCell>
+                              <TableCell className="px-6 py-4">
+                                <div className="text-xs font-bold text-red-500">
+                                    R$ {(p.cpg * (p.factor || initialData.settings.factor)).toFixed(2).replace('.', ',')}
+                                    <span className="text-[0.6rem] text-vitalab-text-muted ml-1 uppercase font-black">/ 500mg</span>
+                                </div>
+                              </TableCell>
+                              <TableCell className="px-6 py-4 text-center">
+                                <Badge className={`text-[0.6rem] font-black uppercase tracking-widest ${p.active ? 'bg-vitalab-green/10 text-vitalab-green hover:bg-vitalab-green/20' : 'bg-vitalab-bg text-vitalab-text-muted hover:bg-vitalab-bg/80'}`}>
+                                    {p.active ? 'Ativo' : 'Inativo'}
+                                </Badge>
+                              </TableCell>
+                              <TableCell className="px-6 py-4 text-right">
+                                <div className="flex gap-1 justify-end opacity-0 group-hover:opacity-100 transition-opacity">
+                                  <Button 
+                                      variant="outline" 
+                                      size="sm" 
+                                      onClick={() => startEdit(p.id, { 
+                                        cpg: p.cpg, 
+                                        factor: p.factor, 
+                                        active: p.active,
+                                        name: p.name,
+                                        unit: p.unit,
+                                        desc: p.desc,
+                                        dosesRaw: p.doses.join(', ')
+                                      })}
+                                      className="h-8 px-2 border-vitalab-border text-vitalab-text-muted hover:text-vitalab-green hover:border-vitalab-green font-bold text-[0.65rem] uppercase"
+                                  >
+                                      Editar
+                                  </Button>
+                                  <Button 
+                                      variant="outline" 
+                                      size="icon" 
+                                      onClick={() => deleteProductAction(p.id)}
+                                      className="h-8 w-8 border-vitalab-border text-vitalab-text-muted hover:text-red-500 hover:border-red-500"
+                                  >
+                                      <X size={14} />
+                                  </Button>
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          ))
+                        )}
+                      </TableBody>
+                    </Table>
+                    <PaginationUI totalItems={filteredProducts.length} />
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
@@ -553,16 +711,14 @@ export function AdminContainer({ session, initialData }: AdminContainerProps) {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {initialData.categories.map((c) => (
+                  {paginate(initialData.categories).map((c) => (
                     <TableRow key={c.id} className="group transition-colors border-vitalab-border">
                       <TableCell className="px-6 py-4 font-mono text-[0.65rem] font-bold text-vitalab-text-muted uppercase">
                         {c.id}
                       </TableCell>
                       <TableCell className="px-6 py-4">
                         <div className="flex items-center gap-3">
-                           <span className="text-lg bg-vitalab-bg w-10 h-10 flex items-center justify-center rounded-lg border border-vitalab-border">
-                            {c.ico}
-                           </span>
+                           <div className="bg-vitalab-bg w-1 h-10" />
                            <span className="font-bold text-vitalab-text">{c.label}</span>
                         </div>
                       </TableCell>
@@ -571,7 +727,7 @@ export function AdminContainer({ session, initialData }: AdminContainerProps) {
                           <Button 
                               variant="outline" 
                               size="sm" 
-                              onClick={() => startEdit(c.id, { label: c.label, ico: c.ico })}
+                              onClick={() => startEdit(c.id, { label: c.label })}
                               className="h-8 px-2 border-vitalab-border text-vitalab-text-muted hover:text-vitalab-green hover:border-vitalab-green font-bold text-[0.65rem] uppercase"
                           >
                               Editar
@@ -590,6 +746,7 @@ export function AdminContainer({ session, initialData }: AdminContainerProps) {
                   ))}
                 </TableBody>
               </Table>
+              <PaginationUI totalItems={initialData.categories.length} />
             </div>
           )}
 
@@ -606,7 +763,7 @@ export function AdminContainer({ session, initialData }: AdminContainerProps) {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {initialData.partners.map((p) => (
+                  {paginate(initialData.partners).map((p) => (
                     <TableRow key={p.id} className="group transition-colors border-vitalab-border">
                       <TableCell className="px-6 py-4">
                         <div className="font-bold text-vitalab-text text-sm">{p.name}</div>
@@ -634,6 +791,7 @@ export function AdminContainer({ session, initialData }: AdminContainerProps) {
                                 city: p.city, 
                                 wa: p.wa, 
                                 rt: p.rt, 
+                                pharmacistEmail: p.pharmacistEmail,
                                 active: p.active,
                                 specsRaw: p.specs.join(', ')
                               })}
@@ -655,6 +813,7 @@ export function AdminContainer({ session, initialData }: AdminContainerProps) {
                   ))}
                 </TableBody>
               </Table>
+              <PaginationUI totalItems={initialData.partners.length} />
             </div>
           )}
 
@@ -672,7 +831,7 @@ export function AdminContainer({ session, initialData }: AdminContainerProps) {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {initialData.orders.map((o) => (
+                  {paginate(initialData.orders).map((o) => (
                     <TableRow key={o.id} className="group transition-colors border-vitalab-border">
                       <TableCell className="px-6 py-3">
                          <div className="font-mono text-[0.65rem] font-bold text-vitalab-text">#{o.id.toString().slice(-6)}</div>
@@ -700,14 +859,35 @@ export function AdminContainer({ session, initialData }: AdminContainerProps) {
                          R$ {o.total.toFixed(2).replace('.', ',')}
                       </TableCell>
                       <TableCell className="px-6 py-3 text-right">
-                        <Button variant="outline" size="icon" className="h-8 w-8 border-vitalab-border text-vitalab-text-muted hover:text-vitalab-green">
-                           <Eye size={14} />
-                        </Button>
+                        <div className="flex gap-1 justify-end opacity-0 group-hover:opacity-100 transition-opacity">
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            onClick={() => startEdit(o.id, { 
+                              status: o.status,
+                              pharmacistNote: o.pharmacistNote || ''
+                            })}
+                            className="h-8 px-2 border-vitalab-border text-vitalab-text-muted hover:text-vitalab-green hover:border-vitalab-green font-bold text-[0.65rem] uppercase"
+                          >
+                            Editar
+                          </Button>
+                          <Button 
+                            variant="outline" 
+                            size="icon" 
+                            onClick={() => {
+                              if(confirm('Deseja excluir este pedido?')) deleteOrderAction(o.id.toString());
+                            }}
+                            className="h-8 w-8 border-vitalab-border text-vitalab-text-muted hover:text-red-500 hover:border-red-500"
+                          >
+                            <Trash2 size={14} />
+                          </Button>
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
               </Table>
+              <PaginationUI totalItems={initialData.orders.length} />
             </div>
           )}
 
@@ -723,7 +903,7 @@ export function AdminContainer({ session, initialData }: AdminContainerProps) {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {initialData.users.map((u) => (
+                  {paginate(initialData.users).map((u) => (
                     <TableRow key={u.id} className="group transition-colors border-vitalab-border">
                       <TableCell className="px-6 py-4">
                         <div className="flex items-center gap-3">
@@ -778,6 +958,7 @@ export function AdminContainer({ session, initialData }: AdminContainerProps) {
                   ))}
                 </TableBody>
               </Table>
+              <PaginationUI totalItems={initialData.users.length} />
             </div>
           )}
         </main>
@@ -827,10 +1008,6 @@ export function AdminContainer({ session, initialData }: AdminContainerProps) {
                   <Label htmlFor="clabel" className="text-right text-xs font-bold uppercase tracking-widest opacity-70">Nome</Label>
                   <Input id="clabel" value={newValues.label} onChange={e => setNewValues({...newValues, label: e.target.value})} className="col-span-3 font-bold" />
                 </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="cico" className="text-right text-xs font-bold uppercase tracking-widest opacity-70">Ícone</Label>
-                  <Input id="cico" value={newValues.ico} onChange={e => setNewValues({...newValues, ico: e.target.value})} className="col-span-3" placeholder="💊" />
-                </div>
               </>
             )}
             {activeTab === 'partners' && (
@@ -846,6 +1023,34 @@ export function AdminContainer({ session, initialData }: AdminContainerProps) {
                 <div className="grid grid-cols-4 items-center gap-4">
                   <Label htmlFor="pwa" className="text-right text-xs font-bold uppercase tracking-widest opacity-70">WhatsApp</Label>
                   <Input id="pwa" value={newValues.wa} onChange={e => setNewValues({...newValues, wa: e.target.value})} className="col-span-3 font-mono" placeholder="55..." />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="prt" className="text-right text-xs font-bold uppercase tracking-widest opacity-70">RT</Label>
+                  <Input id="prt" value={newValues.rt} onChange={e => setNewValues({...newValues, rt: e.target.value})} className="col-span-3" placeholder="Resp. Técnico" />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="ppharma" className="text-right text-xs font-bold uppercase tracking-widest opacity-70">Responsável</Label>
+                  <select 
+                    id="ppharma" 
+                    className="col-span-3 h-10 px-3 rounded-md border border-vitalab-border bg-white text-sm font-bold outline-none focus:border-vitalab-green" 
+                    value={newValues.pharmacistEmail} 
+                    onChange={e => setNewValues({...newValues, pharmacistEmail: e.target.value})}
+                  >
+                    <option value="">Selecione um farmacêutico</option>
+                    {initialData.users.filter(u => u.role === 'PHARMA').map(u => (
+                      <option key={u.id} value={u.email}>{u.name}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="pspecs" className="text-right text-xs font-bold uppercase tracking-widest opacity-70">Especialidades</Label>
+                  <Textarea 
+                    id="pspecs" 
+                    value={newValues.specsRaw} 
+                    onChange={e => setNewValues({...newValues, specsRaw: e.target.value})} 
+                    className="col-span-3 h-20" 
+                    placeholder="Separe por vírgula..." 
+                  />
                 </div>
               </>
             )}
@@ -891,10 +1096,6 @@ export function AdminContainer({ session, initialData }: AdminContainerProps) {
                   <Label className="text-right text-xs font-bold uppercase tracking-widest opacity-70">Nome</Label>
                   <Input value={editValues.label} onChange={e => setEditValues({...editValues, label: e.target.value})} className="col-span-3 font-bold" />
                 </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label className="text-right text-xs font-bold uppercase tracking-widest opacity-70">Ícone</Label>
-                  <Input value={editValues.ico} onChange={e => setEditValues({...editValues, ico: e.target.value})} className="col-span-3" />
-                </div>
               </>
             )}
             {activeTab === 'partners' && (
@@ -906,6 +1107,35 @@ export function AdminContainer({ session, initialData }: AdminContainerProps) {
                 <div className="grid grid-cols-4 items-center gap-4">
                   <Label className="text-right text-xs font-bold uppercase tracking-widest opacity-70">WhatsApp</Label>
                   <Input value={editValues.wa} onChange={e => setEditValues({...editValues, wa: e.target.value})} className="col-span-3 font-mono" />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label className="text-right text-xs font-bold uppercase tracking-widest opacity-70">Cidade</Label>
+                  <Input value={editValues.city} onChange={e => setEditValues({...editValues, city: e.target.value})} className="col-span-3" />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label className="text-right text-xs font-bold uppercase tracking-widest opacity-70">RT</Label>
+                  <Input value={editValues.rt} onChange={e => setEditValues({...editValues, rt: e.target.value})} className="col-span-3" />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label className="text-right text-xs font-bold uppercase tracking-widest opacity-70">Responsável</Label>
+                  <select 
+                    className="col-span-3 h-10 px-3 rounded-md border border-vitalab-border bg-white text-sm font-bold outline-none focus:border-vitalab-green" 
+                    value={editValues.pharmacistEmail} 
+                    onChange={e => setEditValues({...editValues, pharmacistEmail: e.target.value})}
+                  >
+                    <option value="">Selecione um farmacêutico</option>
+                    {initialData.users.filter(u => u.role === 'PHARMA').map(u => (
+                      <option key={u.id} value={u.email}>{u.name}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label className="text-right text-xs font-bold uppercase tracking-widest opacity-70">Especialidades</Label>
+                  <Textarea 
+                    value={editValues.specsRaw} 
+                    onChange={e => setEditValues({...editValues, specsRaw: e.target.value})} 
+                    className="col-span-3 h-20" 
+                  />
                 </div>
                 <div className="grid grid-cols-4 items-center gap-4">
                    <Label className="text-right text-xs font-bold uppercase tracking-widest opacity-70">Ativo</Label>
@@ -941,6 +1171,32 @@ export function AdminContainer({ session, initialData }: AdminContainerProps) {
                 </div>
               </>
             )}
+            {activeTab === 'orders' && (
+              <>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label className="text-right text-xs font-bold uppercase tracking-widest opacity-70">Status</Label>
+                  <select 
+                    value={editValues.status} 
+                    onChange={e => setEditValues({...editValues, status: e.target.value})}
+                    className="col-span-3 h-10 px-3 rounded-md border border-vitalab-border bg-white text-sm font-bold outline-none focus:border-vitalab-green"
+                  >
+                    <option value="REVIEW">REVIEW</option>
+                    <option value="APPROVED">APPROVED</option>
+                    <option value="ADJUSTMENT">ADJUSTMENT</option>
+                    <option value="COMPLETED">COMPLETED</option>
+                  </select>
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label className="text-right text-xs font-bold uppercase tracking-widest opacity-70">Nota</Label>
+                  <Textarea 
+                    value={editValues.pharmacistNote} 
+                    onChange={e => setEditValues({...editValues, pharmacistNote: e.target.value})}
+                    className="col-span-3 font-medium text-sm"
+                    placeholder="Observações do farmacêutico..."
+                  />
+                </div>
+              </>
+            )}
           </div>
           <DialogFooter>
             <Button 
@@ -949,6 +1205,10 @@ export function AdminContainer({ session, initialData }: AdminContainerProps) {
                  if (activeTab === 'categories') saveCategory(editingId as string);
                  if (activeTab === 'partners') savePartner(editingId as number);
                  if (activeTab === 'users') saveUser(editingId as string);
+                 if (activeTab === 'orders') {
+                    updateOrderStatusAction(editingId as string, editValues.status, editValues.pharmacistNote);
+                    setEditingId(null);
+                 }
                }} 
                className="bg-vitalab-green text-white font-black"
             >

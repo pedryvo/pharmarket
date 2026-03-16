@@ -28,7 +28,6 @@ export class OrderService {
           ...it,
           name: prod.name,
           unit: prod.unit,
-          ico: prod.ico,
           cpg: prod.cpg,
           factor: prod.factor ?? globalFactor
         };
@@ -62,7 +61,6 @@ export class OrderService {
             productId: it.productId,
             name: it.name,
             unit: it.unit,
-            ico: it.ico,
             dosePerCap: it.dosePerCap,
             cpg: it.cpg,
             factor: it.factor ?? globalFactor,

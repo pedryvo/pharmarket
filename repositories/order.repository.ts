@@ -71,4 +71,10 @@ export class OrderRepository {
       }
     })
   }
+
+  static async delete(id: string) {
+    return prisma.order.delete({
+      where: { id }
+    })
+  }
 }

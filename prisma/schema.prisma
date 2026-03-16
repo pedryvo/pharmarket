@@ -1,0 +1,113 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  CLIENT
+  PHARMA
+  ADMIN
+}
+
+enum OrderStatus {
+  REVIEW
+  APPROVED
+  ADJUSTMENT
+  COMPLETED
+}
+
+model User {
+  id        String   @id @default(uuid())
+  username  String   @unique
+  password  String
+  name      String
+  phone     String?
+  role      Role     @default(CLIENT)
+  createdAt DateTime @default(now())
+  orders    Order[]
+  partners  Partner[]
+}
+
+model Category {
+  id       String    @id // slug (e.g., 'vitamina')
+  label    String
+  ico      String    @default("💊")
+  bg       String    @default("rgba(45,134,83,.12)")
+  color    String    @default("#1f6340")
+  products Product[]
+}
+
+model Product {
+  id         Int         @id @default(autoincrement())
+  name       String
+  category   Category    @relation(fields: [categoryId], references: [id])
+  categoryId String
+  unit       String      @default("mg") // mg, mcg, UI, etc.
+  ico        String?     @default("💊")
+  desc       String?
+  cpg        Float       // Cost per gram
+  doses      Float[]     // Suggested dosages
+  factor     Float?      // Custom profit factor
+  active     Boolean     @default(true)
+  orderItems OrderItem[]
+}
+
+model Partner {
+  id                 Int      @id @default(autoincrement())
+  name               String
+  city               String
+  wa                 String   // WhatsApp
+  rt                 String   // Responsible Technician
+  pharmacist         User     @relation(fields: [pharmacistUsername], references: [username])
+  pharmacistUsername String
+  specs              String[] // Specialties
+  active             Boolean  @default(true)
+  orders             Order[]
+}
+
+model Order {
+  id             String      @id // VTL-XXXX
+  client         User        @relation(fields: [clientUsername], references: [username])
+  clientUsername String
+  date           DateTime    @default(now())
+  formulaName    String
+  form           String      // Pharmaceutical form
+  caps           Int         // Number of capsules
+  partner        Partner     @relation(fields: [partnerId], references: [id])
+  partnerId      Int
+  status         OrderStatus @default(REVIEW)
+  capCost        Float       // Packaging cost per unit
+  capsTotal      Float       // Total packaging cost
+  total          Float       // Grand total
+  obs            String?
+  pharmacistNote String?
+  items          OrderItem[]
+}
+
+model OrderItem {
+  id         String  @id @default(uuid())
+  order      Order   @relation(fields: [orderId], references: [id])
+  orderId    String
+  productId  Int
+  product    Product @relation(fields: [productId], references: [id])
+  name       String
+  unit       String
+  ico        String?
+  dosePerCap Float
+  cpg        Float
+  factor     Float
+  rawCost    Float
+  price      Float
+}
+
+model PlatformSetting {
+  id      Int      @id @default(1)
+  name    String   @default("VitaLab")
+  factor  Float    @default(3.5)
+  capCost Float    @default(0.05)
+  forms   String[] @default(["Cápsula Gelatinosa", "Cápsula HPMC (Vegana)", "Comprimido", "Sachê", "Solução Oral"])
+  wa      String   @default("5577999990000")
+}

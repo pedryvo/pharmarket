@@ -1,0 +1,1590 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VitaLab — Farmácias de Manipulação</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --green:      #2d8653;
+  --green-l:    #e8f5ee;
+  --green-ll:   #f2faf5;
+  --green-m:    #3da06a;
+  --green-d:    #1f6340;
+  --green-text: #155233;
+  --orange:     #f27021;
+  --orange-l:   #fff4ec;
+  --orange-d:   #c85a10;
+  --white:      #ffffff;
+  --bg:         #f7f9f7;
+  --bg2:        #eef3ef;
+  --border:     #e2ece5;
+  --border2:    #cdddd3;
+  --text:       #1a2b21;
+  --text2:      #4a6355;
+  --text3:      #7a9a87;
+  --red:        #e03c3c;
+  --red-l:      #fef2f2;
+  --blue-l:     #eef2ff;
+  --blue:       #4a6cf7;
+  --shadow-s:   0 1px 3px rgba(45,134,83,.10), 0 1px 2px rgba(0,0,0,.05);
+  --shadow-m:   0 4px 16px rgba(45,134,83,.10), 0 2px 6px rgba(0,0,0,.06);
+  --shadow-l:   0 12px 40px rgba(45,134,83,.13), 0 4px 12px rgba(0,0,0,.07);
+  --r:          12px;
+  --r-l:        18px;
+  --r-xl:       24px;
+  --font:       'Plus Jakarta Sans', sans-serif;
+  --mono:       'Space Mono', monospace;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body { font-family: var(--font); background: var(--bg); color: var(--text); min-height: 100vh; font-size: 15px; -webkit-font-smoothing: antialiased; }
+
+/* ── SCREENS ── */
+.screen { display: none; min-height: 100vh; flex-direction: column; }
+.screen.active { display: flex; }
+
+/* ── LOGIN ── */
+#screen-login { background: var(--white); align-items: stretch; flex-direction: row; }
+.login-left {
+  flex: 1; background: var(--green); display: flex; flex-direction: column;
+  align-items: center; justify-content: center; padding: 3rem;
+  position: relative; overflow: hidden;
+}
+.login-left::before {
+  content: ''; position: absolute; width: 500px; height: 500px;
+  border-radius: 50%; background: rgba(255,255,255,.06);
+  bottom: -200px; right: -150px;
+}
+.login-left::after {
+  content: ''; position: absolute; width: 300px; height: 300px;
+  border-radius: 50%; background: rgba(255,255,255,.04);
+  top: -100px; left: -80px;
+}
+.login-hero { position: relative; z-index: 1; text-align: center; color: white; }
+.login-logo-ico {
+  width: 72px; height: 72px; margin: 0 auto 1.2rem;
+  background: rgba(255,255,255,.15); border-radius: 20px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 32px; backdrop-filter: blur(8px);
+}
+.login-brand { font-size: 2.6rem; font-weight: 800; letter-spacing: -.02em; margin-bottom: .3rem; }
+.login-tagline { font-size: .95rem; opacity: .75; max-width: 280px; line-height: 1.6; }
+.login-pills { display: flex; gap: .6rem; margin-top: 2rem; flex-wrap: wrap; justify-content: center; }
+.login-pill {
+  background: rgba(255,255,255,.15); border: 1px solid rgba(255,255,255,.2);
+  border-radius: 20px; padding: .35rem .9rem; font-size: .78rem; color: rgba(255,255,255,.85);
+}
+.login-right {
+  width: 440px; flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+  padding: 3rem 2.8rem;
+}
+.login-form-wrap { width: 100%; }
+.login-form-title { font-size: 1.6rem; font-weight: 800; margin-bottom: .4rem; color: var(--text); }
+.login-form-sub { font-size: .88rem; color: var(--text3); margin-bottom: 2rem; }
+.tabs2 { display: flex; background: var(--bg); border-radius: var(--r); padding: .25rem; margin-bottom: 1.8rem; gap: .25rem; }
+.tab2 {
+  flex: 1; padding: .55rem; background: transparent; border: none;
+  font-family: var(--font); font-size: .88rem; font-weight: 600; cursor: pointer;
+  border-radius: 8px; color: var(--text3); transition: all .2s;
+}
+.tab2.active { background: var(--white); color: var(--green); box-shadow: var(--shadow-s); }
+.fg { margin-bottom: 1.1rem; }
+.fl { display: block; font-size: .75rem; font-weight: 600; color: var(--text2); margin-bottom: .4rem; }
+.fi {
+  width: 100%; padding: .72rem 1rem; background: var(--white);
+  border: 1.5px solid var(--border); border-radius: var(--r);
+  color: var(--text); font-family: var(--font); font-size: .9rem; outline: none;
+  transition: border-color .2s, box-shadow .2s;
+}
+.fi:focus { border-color: var(--green); box-shadow: 0 0 0 3px rgba(45,134,83,.1); }
+.fi::placeholder { color: var(--text3); }
+.fs {
+  width: 100%; padding: .72rem 1rem; background: var(--white);
+  border: 1.5px solid var(--border); border-radius: var(--r);
+  color: var(--text); font-family: var(--font); font-size: .9rem; outline: none; cursor: pointer; appearance: none;
+}
+textarea.fi { resize: vertical; min-height: 72px; line-height: 1.6; }
+.lmsg { font-size: .82rem; padding: .6rem .9rem; border-radius: 8px; margin-top: .8rem; }
+.le { background: var(--red-l); color: var(--red); border: 1px solid #fca5a5; }
+.ls { background: var(--green-l); color: var(--green-d); border: 1px solid #86efac; }
+
+/* ── BUTTONS ── */
+.btn {
+  padding: .78rem 1.4rem; border: none; border-radius: var(--r);
+  font-family: var(--font); font-size: .95rem; font-weight: 700; cursor: pointer;
+  transition: all .18s; display: inline-flex; align-items: center; justify-content: center; gap: .5rem; width: 100%;
+}
+.btn-g { background: var(--green); color: #fff; }
+.btn-g:hover { background: var(--green-m); transform: translateY(-1px); box-shadow: 0 6px 18px rgba(45,134,83,.28); }
+.btn-o { background: var(--orange); color: #fff; }
+.btn-o:hover { background: var(--orange-d); transform: translateY(-1px); box-shadow: 0 6px 18px rgba(242,112,33,.28); }
+.btn-ghost { background: var(--white); color: var(--text2); border: 1.5px solid var(--border); }
+.btn-ghost:hover { border-color: var(--border2); background: var(--bg); }
+.btn-ghost-g { background: var(--green-l); color: var(--green-d); border: 1.5px solid rgba(45,134,83,.2); }
+.btn-ghost-g:hover { background: #d1ede0; }
+.btn-red { background: var(--red-l); color: var(--red); border: 1.5px solid #fca5a5; }
+.btn-red:hover { background: #fee2e2; }
+.btn-sm { padding: .42rem .9rem; font-size: .82rem; width: auto; }
+.btn-xs { padding: .28rem .65rem; font-size: .75rem; width: auto; }
+.btn:disabled { opacity: .45; cursor: not-allowed; transform: none !important; box-shadow: none !important; }
+
+/* ── NAV ── */
+.navbar {
+  background: var(--white); border-bottom: 1px solid var(--border);
+  padding: 0 2rem; position: sticky; top: 0; z-index: 100;
+  display: flex; align-items: center; gap: 1rem; height: 60px;
+  box-shadow: 0 1px 0 var(--border);
+}
+.nav-logo {
+  display: flex; align-items: center; gap: .6rem; text-decoration: none;
+  font-size: 1.25rem; font-weight: 800; color: var(--green); letter-spacing: -.02em;
+}
+.nav-logo-ico {
+  width: 34px; height: 34px; background: var(--green); border-radius: 9px;
+  display: flex; align-items: center; justify-content: center; font-size: 16px;
+}
+.nav-search {
+  flex: 1; max-width: 440px; position: relative;
+}
+.nav-search-ico { position: absolute; left: .85rem; top: 50%; transform: translateY(-50%); color: var(--text3); font-size: .95rem; pointer-events: none; }
+.nav-search input {
+  width: 100%; padding: .6rem 1rem .6rem 2.5rem; background: var(--bg);
+  border: 1.5px solid var(--border); border-radius: 30px;
+  font-family: var(--font); font-size: .88rem; color: var(--text); outline: none;
+}
+.nav-search input:focus { border-color: var(--green); background: var(--white); }
+.nav-search input::placeholder { color: var(--text3); }
+.nav-right { display: flex; align-items: center; gap: .7rem; margin-left: auto; }
+.nav-user {
+  display: flex; align-items: center; gap: .5rem;
+  background: var(--green-l); border: 1px solid rgba(45,134,83,.2);
+  border-radius: 20px; padding: .32rem .9rem; font-size: .82rem;
+  font-weight: 600; color: var(--green-text);
+}
+.nav-user-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); }
+.nav-user-dot.orange { background: var(--orange); }
+.nav-user-dot.red { background: var(--red); }
+
+/* ── ADMIN SUBNAV ── */
+.admin-subnav {
+  background: var(--white); border-bottom: 1px solid var(--border);
+  display: flex; padding: 0 2rem; overflow-x: auto; gap: .2rem;
+}
+.admin-tab {
+  padding: .85rem 1.2rem; background: transparent; border: none;
+  border-bottom: 2px solid transparent; font-family: var(--font);
+  font-size: .86rem; font-weight: 600; color: var(--text3); cursor: pointer;
+  white-space: nowrap; transition: all .18s; margin-bottom: -1px;
+}
+.admin-tab.active { color: var(--green); border-bottom-color: var(--green); }
+
+/* ── CLIENT LAYOUT ── */
+.client-body { display: flex; flex: 1; overflow: hidden; height: calc(100vh - 60px); }
+.catalog-col { flex: 1; overflow-y: auto; background: var(--bg); }
+.cart-sidebar {
+  width: 380px; flex-shrink: 0; background: var(--white);
+  border-left: 1px solid var(--border); display: flex; flex-direction: column;
+  overflow: hidden;
+}
+
+/* ── HERO BANNER ── */
+.hero-banner {
+  background: linear-gradient(135deg, var(--green-d) 0%, var(--green) 60%, var(--green-m) 100%);
+  padding: 2.2rem 2rem; position: relative; overflow: hidden;
+}
+.hero-banner::before {
+  content: ''; position: absolute; width: 400px; height: 400px; border-radius: 50%;
+  background: rgba(255,255,255,.05); right: -100px; top: -150px;
+}
+.hero-banner::after {
+  content: ''; position: absolute; width: 200px; height: 200px; border-radius: 50%;
+  background: rgba(255,255,255,.04); left: 60%; bottom: -80px;
+}
+.hero-content { position: relative; z-index: 1; }
+.hero-title { font-size: 1.5rem; font-weight: 800; color: #fff; margin-bottom: .4rem; }
+.hero-sub { font-size: .88rem; color: rgba(255,255,255,.75); max-width: 480px; line-height: 1.6; }
+.hero-badges { display: flex; gap: .5rem; margin-top: 1.2rem; flex-wrap: wrap; }
+.hero-badge {
+  background: rgba(255,255,255,.15); border: 1px solid rgba(255,255,255,.22);
+  border-radius: 20px; padding: .3rem .85rem; font-size: .76rem;
+  color: rgba(255,255,255,.9); font-weight: 600; backdrop-filter: blur(4px);
+}
+
+/* ── PARTNERS STRIP ── */
+.partners-strip { padding: 1.4rem 2rem; background: var(--white); border-bottom: 1px solid var(--border); }
+.partners-title { font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: var(--text3); margin-bottom: .9rem; }
+.partners-row { display: flex; gap: .8rem; overflow-x: auto; padding-bottom: .3rem; }
+.partner-card {
+  flex-shrink: 0; display: flex; align-items: center; gap: .65rem;
+  background: var(--bg); border: 1.5px solid var(--border); border-radius: var(--r);
+  padding: .6rem 1rem; cursor: pointer; transition: all .18s;
+}
+.partner-card:hover, .partner-card.active { border-color: var(--green); background: var(--green-l); }
+.partner-card.active .partner-name { color: var(--green-text); }
+.partner-ico {
+  width: 36px; height: 36px; border-radius: 9px; background: var(--green-l);
+  display: flex; align-items: center; justify-content: center; font-size: 17px; flex-shrink: 0;
+}
+.partner-name { font-size: .82rem; font-weight: 700; color: var(--text); }
+.partner-city { font-size: .72rem; color: var(--text3); }
+.partner-tag {
+  font-size: .68rem; font-weight: 700; padding: .15rem .45rem; border-radius: 5px;
+  background: var(--green-l); color: var(--green-d); margin-left: auto;
+}
+
+/* ── CATEGORIES ── */
+.cat-strip { padding: 1.2rem 2rem; display: flex; gap: .5rem; overflow-x: auto; border-bottom: 1px solid var(--border); background: var(--white); }
+.cat-pill {
+  flex-shrink: 0; display: flex; align-items: center; gap: .45rem;
+  padding: .42rem .95rem; border-radius: 20px; border: 1.5px solid var(--border);
+  background: var(--white); font-size: .82rem; font-weight: 600; cursor: pointer;
+  color: var(--text2); transition: all .18s; white-space: nowrap;
+}
+.cat-pill:hover { border-color: var(--green); color: var(--green); }
+.cat-pill.active { background: var(--green); border-color: var(--green); color: #fff; }
+.cat-pill .cat-ico { font-size: .95rem; }
+
+/* ── PRODUCT GRID ── */
+.prod-section { padding: 1.5rem 2rem; }
+.prod-section-title { font-size: 1rem; font-weight: 800; color: var(--text); margin-bottom: 1rem; }
+.prod-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(185px, 1fr)); gap: .9rem; }
+.prod-card {
+  background: var(--white); border: 1.5px solid var(--border); border-radius: var(--r-l);
+  overflow: hidden; cursor: pointer; transition: all .2s; position: relative;
+}
+.prod-card:hover { border-color: var(--green); box-shadow: var(--shadow-m); transform: translateY(-2px); }
+.prod-card-top {
+  background: var(--green-ll); padding: 1.1rem 1rem .9rem;
+  display: flex; align-items: center; justify-content: center; flex-direction: column; min-height: 90px;
+  position: relative;
+}
+.prod-card-ico { font-size: 2rem; margin-bottom: .3rem; }
+.prod-cat-badge {
+  font-size: .65rem; font-weight: 700; padding: .15rem .5rem; border-radius: 20px;
+  text-transform: uppercase; letter-spacing: .07em;
+}
+.prod-card-body { padding: .85rem .95rem .95rem; }
+.prod-name { font-size: .9rem; font-weight: 700; color: var(--text); margin-bottom: .2rem; line-height: 1.3; }
+.prod-cpg { font-size: .72rem; color: var(--text3); margin-bottom: .6rem; font-family: var(--mono); }
+.prod-add-btn {
+  width: 100%; padding: .42rem; background: var(--green-l); border: 1.5px solid rgba(45,134,83,.25);
+  border-radius: 8px; color: var(--green-d); font-family: var(--font); font-size: .82rem; font-weight: 700;
+  cursor: pointer; transition: all .18s;
+}
+.prod-add-btn:hover { background: var(--green); color: #fff; border-color: var(--green); }
+.prod-add-btn.in-cart { background: var(--green); color: #fff; border-color: var(--green); }
+.prod-card-ribbon {
+  position: absolute; top: .6rem; right: .6rem;
+  background: var(--orange); color: #fff; font-size: .62rem; font-weight: 700;
+  padding: .18rem .45rem; border-radius: 6px; text-transform: uppercase;
+}
+
+/* ── CART SIDEBAR ── */
+.cart-head {
+  padding: 1rem 1.3rem; border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.cart-head-title {
+  display: flex; justify-content: space-between; align-items: center;
+  font-size: 1rem; font-weight: 800; color: var(--text);
+}
+.cart-badge {
+  background: var(--orange); color: #fff; border-radius: 12px;
+  padding: .18rem .6rem; font-size: .75rem; font-weight: 700;
+}
+.cart-formula-name {
+  margin-top: .7rem;
+}
+.cart-fname-input {
+  width: 100%; padding: .5rem .8rem; background: var(--bg);
+  border: 1.5px solid var(--border); border-radius: 8px;
+  font-family: var(--font); font-size: .83rem; color: var(--text); outline: none;
+}
+.cart-fname-input:focus { border-color: var(--green); background: var(--white); }
+.cart-meta {
+  padding: .75rem 1.3rem; border-bottom: 1px solid var(--border);
+  display: flex; gap: .6rem; align-items: center; flex-shrink: 0; flex-wrap: wrap;
+}
+.caps-label { font-size: .75rem; font-weight: 600; color: var(--text2); white-space: nowrap; }
+.caps-ctrl { display: flex; align-items: center; gap: .4rem; }
+.caps-btn {
+  width: 28px; height: 28px; border-radius: 7px; border: 1.5px solid var(--border);
+  background: var(--white); color: var(--text); font-size: .95rem; cursor: pointer;
+  display: flex; align-items: center; justify-content: center; transition: all .15s;
+}
+.caps-btn:hover { border-color: var(--green); color: var(--green); }
+.caps-val { font-family: var(--mono); font-size: .88rem; font-weight: 700; min-width: 30px; text-align: center; color: var(--text); }
+.form-sel-small { flex: 1; padding: .38rem .6rem; border: 1.5px solid var(--border); border-radius: 8px; font-size: .78rem; font-family: var(--font); background: var(--white); color: var(--text); outline: none; cursor: pointer; appearance: none; }
+.form-sel-small:focus { border-color: var(--green); }
+.cart-items { flex: 1; overflow-y: auto; padding: .8rem 1.3rem; }
+.cart-empty {
+  text-align: center; padding: 2.5rem 1rem; color: var(--text3);
+  font-size: .83rem; line-height: 1.8;
+}
+.cart-empty-ico { font-size: 2.5rem; display: block; margin-bottom: .8rem; }
+.cart-item {
+  background: var(--bg); border: 1.5px solid var(--border); border-radius: var(--r);
+  padding: .75rem .85rem; margin-bottom: .6rem; transition: border-color .15s;
+}
+.cart-item:hover { border-color: var(--border2); }
+.cart-item-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: .45rem; }
+.cart-item-name { font-size: .85rem; font-weight: 700; color: var(--text); flex: 1; padding-right: .5rem; line-height: 1.3; }
+.cart-item-del { background: none; border: none; color: var(--text3); cursor: pointer; font-size: .88rem; transition: color .15s; padding: .1rem; }
+.cart-item-del:hover { color: var(--red); }
+.cart-dose-row { display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; }
+.dose-sel {
+  padding: .26rem .55rem; border: 1.5px solid var(--border); border-radius: 7px;
+  background: var(--white); font-family: var(--mono); font-size: .76rem; color: var(--text);
+  outline: none; cursor: pointer; appearance: none;
+}
+.dose-sel:focus { border-color: var(--green); }
+.dose-custom {
+  width: 62px; padding: .26rem .45rem; border: 1.5px solid var(--border); border-radius: 7px;
+  background: var(--white); font-family: var(--mono); font-size: .76rem; color: var(--text);
+  outline: none; text-align: center;
+}
+.dose-custom:focus { border-color: var(--green); }
+.dose-unit { font-size: .72rem; color: var(--text3); }
+.cart-item-price { display: flex; justify-content: space-between; align-items: center; margin-top: .45rem; }
+.ci-price { font-family: var(--mono); font-size: .82rem; font-weight: 700; color: var(--green-d); }
+.ci-detail { font-size: .68rem; color: var(--text3); }
+.cart-footer { padding: 1rem 1.3rem; border-top: 1px solid var(--border); flex-shrink: 0; }
+.cart-breakdown { margin-bottom: .7rem; }
+.brow { display: flex; justify-content: space-between; font-size: .76rem; padding: .16rem 0; }
+.brow-l { color: var(--text3); }
+.brow-v { font-family: var(--mono); color: var(--text2); }
+.cart-total-row { display: flex; justify-content: space-between; align-items: center; padding: .5rem 0; border-top: 1px solid var(--border); margin-top: .3rem margin-bottom: .7rem; }
+.ct-label { font-size: .85rem; font-weight: 700; color: var(--text); }
+.ct-val { font-family: var(--mono); font-size: 1.2rem; font-weight: 700; color: var(--orange); }
+
+/* ── ORDERS ── */
+.orders-view { padding: 1.5rem 2rem; background: var(--bg); min-height: calc(100vh - 60px); }
+.ocard {
+  background: var(--white); border: 1.5px solid var(--border); border-radius: var(--r-l);
+  padding: 1.1rem 1.3rem; margin-bottom: .9rem; transition: box-shadow .2s;
+}
+.ocard:hover { box-shadow: var(--shadow-s); }
+.oid { font-family: var(--mono); font-size: .73rem; color: var(--text3); }
+.ostatus { padding: .22rem .65rem; border-radius: 20px; font-size: .72rem; font-weight: 700; display: inline-block; }
+.s-review    { background: #fff8e1; color: #b45309; border: 1px solid #fcd34d; }
+.s-approved  { background: var(--green-l); color: var(--green-d); border: 1px solid #86efac; }
+.s-adjustment{ background: var(--blue-l); color: var(--blue); border: 1px solid #a5b4fc; }
+.s-completed { background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; }
+.onote { margin-top: .7rem; padding: .65rem .85rem; border-radius: 8px; font-size: .8rem; line-height: 1.6; }
+.note-adj { background: var(--blue-l); color: #3730a3; border: 1px solid #c7d2fe; }
+.note-apr { background: var(--green-l); color: var(--green-d); border: 1px solid #86efac; }
+
+/* ── PHARMA ── */
+.pharma-body { flex: 1; padding: 1.5rem 2rem; background: var(--bg); overflow-y: auto; }
+.stats-row { display: grid; grid-template-columns: repeat(4,1fr); gap: .9rem; margin-bottom: 1.4rem; }
+.stat-card { background: var(--white); border: 1.5px solid var(--border); border-radius: var(--r); padding: 1rem 1.1rem; }
+.stat-label { font-size: .72rem; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: .07em; margin-bottom: .4rem; }
+.stat-val { font-size: 1.6rem; font-weight: 800; }
+.sv-g { color: var(--green); } .sv-o { color: var(--orange); }
+.sv-b { color: var(--blue); } .sv-t { color: var(--text); }
+.g2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; align-items: start; }
+.section-title { font-size: 1rem; font-weight: 800; color: var(--text); margin-bottom: .9rem; }
+.rcard {
+  background: var(--white); border: 1.5px solid #fcd34d; border-radius: var(--r-l);
+  padding: 1.1rem; margin-bottom: .9rem;
+}
+.rpatient { font-size: .97rem; font-weight: 800; color: var(--text); }
+.rformula { font-size: .85rem; color: var(--green); font-weight: 700; margin-top: .1rem; }
+.rinfo { font-size: .72rem; color: var(--text3); margin-top: .2rem; }
+.ritem { display: flex; justify-content: space-between; padding: .42rem 0; border-bottom: 1px solid var(--border); font-size: .8rem; }
+.ritem:last-child { border-bottom: none; }
+.ri-name { color: var(--text); font-weight: 600; }
+.ri-sub { font-size: .7rem; color: var(--text3); margin-top: .08rem; }
+.ri-price { font-family: var(--mono); color: var(--orange); font-size: .78rem; font-weight: 700; }
+.r-total-row { display: flex; justify-content: space-between; font-size: .84rem; font-weight: 700; padding: .4rem 0; border-top: 1px solid var(--border); margin: .4rem 0 .8rem; }
+.pharma-note {
+  width: 100%; padding: .65rem .8rem; border: 1.5px solid var(--border); border-radius: var(--r);
+  font-family: var(--font); font-size: .82rem; color: var(--text); resize: vertical;
+  min-height: 58px; outline: none; background: var(--bg); margin-bottom: .7rem; line-height: 1.5;
+}
+.pharma-note:focus { border-color: var(--green); background: var(--white); }
+.rbtns { display: flex; gap: .5rem; flex-wrap: wrap; }
+.hist-card { background: var(--white); border: 1.5px solid var(--border); border-radius: var(--r); padding: .95rem 1.1rem; margin-bottom: .7rem; }
+
+/* ── ADMIN ── */
+.admin-body { flex: 1; padding: 1.5rem 2rem; background: var(--bg); overflow-y: auto; }
+.admin-section-head { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.2rem; }
+.page-title { font-size: 1.5rem; font-weight: 800; color: var(--text); margin-bottom: .25rem; }
+.page-sub { font-size: .83rem; color: var(--text3); }
+.table-wrap { background: var(--white); border: 1.5px solid var(--border); border-radius: var(--r-l); overflow: hidden; }
+.atbl { width: 100%; border-collapse: collapse; font-size: .82rem; }
+.atbl th { text-align: left; padding: .7rem 1rem; background: var(--bg); color: var(--text2); font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; border-bottom: 1px solid var(--border); white-space: nowrap; }
+.atbl td { padding: .7rem 1rem; border-bottom: 1px solid var(--border); vertical-align: middle; }
+.atbl tr:last-child td { border-bottom: none; }
+.atbl tr:hover td { background: var(--green-ll); }
+
+/* ── MODAL ── */
+.overlay { display: none; position: fixed; inset: 0; z-index: 300; background: rgba(15,30,20,.45); backdrop-filter: blur(4px); align-items: center; justify-content: center; padding: 1rem; }
+.overlay.active { display: flex; }
+.modal {
+  background: var(--white); border-radius: var(--r-xl); padding: 2rem;
+  width: 100%; max-width: 540px; max-height: 92vh; overflow-y: auto;
+  box-shadow: var(--shadow-l); position: relative;
+}
+.modal-w { max-width: 700px; }
+.modal-title { font-size: 1.2rem; font-weight: 800; color: var(--text); margin-bottom: 1.4rem; }
+.mclose { position: absolute; top: 1rem; right: 1rem; background: var(--bg); border: none; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; font-size: 1rem; display: flex; align-items: center; justify-content: center; color: var(--text2); transition: all .15s; }
+.mclose:hover { background: var(--border); }
+
+/* CHECKOUT SUMMARY TABLE */
+.stbl { width: 100%; border-collapse: collapse; font-size: .8rem; }
+.stbl th { text-align: left; color: var(--text3); font-weight: 600; padding: .35rem .2rem; border-bottom: 1px solid var(--border); }
+.stbl td { padding: .45rem .2rem; border-bottom: 1px solid var(--bg2); vertical-align: top; }
+.stbl td:last-child { text-align: right; font-family: var(--mono); color: var(--orange); }
+.price-box { background: var(--orange-l); border: 1.5px solid rgba(242,112,33,.25); border-radius: var(--r); padding: .85rem 1.1rem; display: flex; justify-content: space-between; align-items: center; margin: .9rem 0; }
+.pb-l { font-size: .8rem; color: var(--text2); font-weight: 600; }
+.pb-v { font-family: var(--mono); font-size: 1.2rem; color: var(--orange); font-weight: 700; }
+
+/* WHATSAPP */
+.wa-card { background: #e9fbe9; border: 1px solid #c3e6c3; border-radius: var(--r); padding: .9rem; }
+.wa-hdr { display: flex; align-items: center; gap: .5rem; color: #1a7a1a; font-size: .83rem; font-weight: 700; margin-bottom: .7rem; padding-bottom: .7rem; border-bottom: 1px solid #c3e6c3; }
+.wa-bubble { background: #fff; border-radius: 0 var(--r) var(--r) var(--r); padding: .7rem .9rem; color: #1a2b21; line-height: 1.7; white-space: pre-wrap; font-size: .8rem; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+
+/* BADGES */
+.badge { display: inline-block; padding: .18rem .55rem; border-radius: 20px; font-size: .7rem; font-weight: 700; }
+.badge-active { background: var(--green-l); color: var(--green-d); }
+.badge-hidden { background: var(--bg2); color: var(--text3); }
+.badge-pharma { background: #fff4ec; color: var(--orange-d); }
+.badge-client { background: var(--green-l); color: var(--green-d); }
+
+/* MISC */
+.divider { border: none; border-top: 1px solid var(--border); margin: .9rem 0; }
+.toast { position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 999; background: var(--text); color: #fff; padding: .85rem 1.3rem; border-radius: var(--r); font-size: .88rem; font-weight: 600; animation: tslide .3s ease; max-width: 320px; box-shadow: var(--shadow-l); }
+.toast.ok { background: var(--green); }
+.toast.err { background: var(--red); }
+.toast.info { background: var(--blue); }
+.hidden { display: none !important; }
+.mono { font-family: var(--mono); }
+.muted { color: var(--text3); }
+.text-green { color: var(--green-d); }
+.text-orange { color: var(--orange); }
+.fw7 { font-weight: 700; }
+.admin-settings-form { background: var(--white); border: 1.5px solid var(--border); border-radius: var(--r-l); padding: 1.5rem; max-width: 520px; }
+
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text3); }
+
+@keyframes tslide { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+@media (max-width: 900px) {
+  .login-left { display: none; }
+  .login-right { width: 100%; }
+  .stats-row, .g2 { grid-template-columns: 1fr; }
+  .cart-sidebar { display: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════
+     SCREEN: LOGIN
+══════════════════════════════════════════ -->
+<div id="screen-login" class="screen active">
+  <div class="login-left">
+    <div class="login-hero">
+      <div class="login-logo-ico">⚗</div>
+      <div class="login-brand">VitaLab</div>
+      <p class="login-tagline">Marketplace de fórmulas manipuladas. Monte sua fórmula e escolha sua farmácia parceira.</p>
+      <div class="login-pills">
+        <span class="login-pill">🧬 Vitaminas</span>
+        <span class="login-pill">🌿 Fitoterápicos</span>
+        <span class="login-pill">⚡ Aminoácidos</span>
+        <span class="login-pill">🔬 Minerais</span>
+        <span class="login-pill">🦠 Probióticos</span>
+      </div>
+    </div>
+  </div>
+  <div class="login-right">
+    <div class="login-form-wrap">
+      <div class="login-form-title">Bem-vindo de volta</div>
+      <p class="login-form-sub">Acesse para montar suas fórmulas</p>
+      <div class="tabs2">
+        <button class="tab2 active" onclick="ltab('login')">Entrar</button>
+        <button class="tab2" onclick="ltab('register')">Criar conta</button>
+      </div>
+      <div id="fl">
+        <div class="fg"><label class="fl">Usuário</label><input class="fi" id="lu" type="text" placeholder="seu_usuario"/></div>
+        <div class="fg"><label class="fl">Senha</label><input class="fi" id="lp" type="password" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"/></div>
+        <button class="btn btn-g" onclick="doLogin()">Entrar na plataforma</button>
+        <div id="lmsg"></div>
+        <p style="font-size:.73rem;color:var(--text3);margin-top:.9rem;text-align:center;line-height:1.8">
+          Demo: <strong style="color:var(--text)">cliente1</strong>/123 &nbsp;·&nbsp;
+          <strong style="color:var(--text)">farmaceutico</strong>/admin &nbsp;·&nbsp;
+          <strong style="color:var(--text)">admin</strong>/admin123
+        </p>
+      </div>
+      <div id="fr" class="hidden">
+        <div class="fg"><label class="fl">Nome completo</label><input class="fi" id="rn" type="text" placeholder="João Silva"/></div>
+        <div class="fg"><label class="fl">Usuário</label><input class="fi" id="ru" type="text" placeholder="joao_silva"/></div>
+        <div class="fg"><label class="fl">WhatsApp</label><input class="fi" id="rph" type="text" placeholder="(77) 99999-9999"/></div>
+        <div class="fg"><label class="fl">Senha</label><input class="fi" id="rp" type="password" placeholder="••••••••"/></div>
+        <button class="btn btn-g" onclick="doReg()">Criar minha conta</button>
+        <div id="rmsg"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SCREEN: CLIENT
+══════════════════════════════════════════ -->
+<div id="screen-client" class="screen">
+  <nav class="navbar">
+    <div class="nav-logo">
+      <div class="nav-logo-ico">⚗</div>
+      VitaLab
+    </div>
+    <div class="nav-search">
+      <span class="nav-search-ico">⌕</span>
+      <input id="srch" placeholder="Buscar ativo…" oninput="filterP()"/>
+    </div>
+    <div class="nav-right">
+      <div class="nav-user">
+        <span class="nav-user-dot"></span>
+        <span id="cli-name-nav">Cliente</span>
+      </div>
+      <button class="btn btn-ghost btn-sm" onclick="cliView('orders')">Meus Pedidos</button>
+      <button class="btn btn-ghost btn-sm" onclick="logout()">Sair</button>
+    </div>
+  </nav>
+
+  <!-- CATALOG VIEW -->
+  <div id="cv-catalog">
+    <div class="client-body">
+      <div class="catalog-col">
+        <!-- hero -->
+        <div class="hero-banner">
+          <div class="hero-content">
+            <div class="hero-title">Monte sua fórmula personalizada</div>
+            <div class="hero-sub">Selecione os ativos, defina a dosagem e quantidade. O farmacêutico da parceira escolhida revisa e aprova antes do preparo.</div>
+            <div class="hero-badges">
+              <span class="hero-badge">✓ Revisão farmacêutica</span>
+              <span class="hero-badge">✓ Preço por grama real</span>
+              <span class="hero-badge">✓ Retorno via WhatsApp</span>
+            </div>
+          </div>
+        </div>
+        <!-- parceiros -->
+        <div class="partners-strip">
+          <div class="partners-title">Farmácias parceiras disponíveis</div>
+          <div class="partners-row" id="partners-row"></div>
+        </div>
+        <!-- categorias -->
+        <div class="cat-strip" id="cat-strip"></div>
+        <!-- produtos -->
+        <div class="prod-section">
+          <div class="prod-section-title" id="prod-section-title">Todos os ativos</div>
+          <div class="prod-grid" id="prod-grid"></div>
+        </div>
+      </div>
+      <!-- CARRINHO -->
+      <div class="cart-sidebar">
+        <div class="cart-head">
+          <div class="cart-head-title">
+            🧪 Minha Fórmula
+            <span class="cart-badge" id="cart-badge">0</span>
+          </div>
+          <div class="cart-formula-name">
+            <input class="cart-fname-input" id="formula-name" placeholder="Nome da fórmula (ex: Imunidade…)" maxlength="60"/>
+          </div>
+        </div>
+        <div class="cart-meta">
+          <span class="caps-label">Cápsulas:</span>
+          <div class="caps-ctrl">
+            <button class="caps-btn" onclick="chgCaps(-10)">−</button>
+            <span class="caps-val" id="caps-val">30</span>
+            <button class="caps-btn" onclick="chgCaps(10)">+</button>
+          </div>
+          <select class="form-sel-small" id="form-sel" onchange="recalc()"></select>
+        </div>
+        <div class="cart-items" id="cart-items"></div>
+        <div class="cart-footer">
+          <div class="cart-breakdown" id="cart-breakdown"></div>
+          <div class="cart-total-row">
+            <span class="ct-label">Total</span>
+            <span class="ct-val" id="cart-total">R$ 0,00</span>
+          </div>
+          <button class="btn btn-o" id="btn-checkout" onclick="openCheckout()" disabled style="margin-top:.7rem">
+            Solicitar fórmula →
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ORDERS VIEW -->
+  <div id="cv-orders" class="hidden orders-view">
+    <div style="display:flex;align-items:center;gap:.9rem;margin-bottom:.3rem">
+      <button class="btn btn-ghost btn-sm" onclick="cliView('catalog')">← Catálogo</button>
+      <div class="page-title" style="margin:0">Meus Pedidos</div>
+    </div>
+    <p class="page-sub" style="margin-bottom:1.2rem">Acompanhe o status e o retorno do farmacêutico</p>
+    <div id="my-orders"></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SCREEN: FARMACÊUTICO
+══════════════════════════════════════════ -->
+<div id="screen-pharma" class="screen">
+  <nav class="navbar">
+    <div class="nav-logo"><div class="nav-logo-ico">⚗</div>VitaLab</div>
+    <div class="nav-right">
+      <div class="nav-user"><span class="nav-user-dot orange"></span>Farmacêutico</div>
+      <button class="btn btn-ghost btn-sm" onclick="logout()">Sair</button>
+    </div>
+  </nav>
+  <div class="pharma-body">
+    <div class="page-title" style="margin-bottom:.2rem">Painel do Farmacêutico</div>
+    <p class="page-sub" style="margin-bottom:1.3rem">Revise e aprove as fórmulas solicitadas pelos clientes</p>
+    <div class="stats-row" id="ph-stats"></div>
+    <div class="g2">
+      <div>
+        <div class="section-title">📋 Aguardando revisão</div>
+        <div id="ph-pending"></div>
+      </div>
+      <div>
+        <div class="section-title">📁 Histórico</div>
+        <div id="ph-history"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SCREEN: ADMIN
+══════════════════════════════════════════ -->
+<div id="screen-admin" class="screen">
+  <nav class="navbar">
+    <div class="nav-logo"><div class="nav-logo-ico">⚗</div>VitaLab <span style="font-size:.75rem;font-weight:500;color:var(--text3);margin-left:.3rem">Admin</span></div>
+    <div class="nav-right">
+      <div class="nav-user"><span class="nav-user-dot red"></span>Administrador</div>
+      <button class="btn btn-ghost btn-sm" onclick="logout()">Sair</button>
+    </div>
+  </nav>
+  <div class="admin-subnav">
+    <button class="admin-tab active" onclick="atab(this,'products')">🧬 Ativos</button>
+    <button class="admin-tab" onclick="atab(this,'categories')">🏷️ Categorias</button>
+    <button class="admin-tab" onclick="atab(this,'partners')">🏥 Farmácias Parceiras</button>
+    <button class="admin-tab" onclick="atab(this,'users')">👥 Usuários</button>
+    <button class="admin-tab" onclick="atab(this,'orders')">📦 Pedidos</button>
+    <button class="admin-tab" onclick="atab(this,'settings')">⚙️ Configurações</button>
+  </div>
+  <div class="admin-body">
+    <div id="at-products">
+      <div class="admin-section-head">
+        <div><div class="page-title">Gerenciar Ativos</div>
+          <p class="page-sub">Preço = (dose mg ÷ 1000) × nº cáps × R$/g × fator de lucro</p></div>
+        <button class="btn btn-g btn-sm" onclick="openPF()">+ Novo ativo</button>
+      </div>
+      <div class="table-wrap"><table class="atbl" id="prod-tbl"></table></div>
+    </div>
+    <div id="at-categories" class="hidden">
+      <div class="admin-section-head">
+        <div><div class="page-title">Categorias</div><p class="page-sub">Organize os ativos do catálogo</p></div>
+        <button class="btn btn-g btn-sm" onclick="openCF()">+ Nova categoria</button>
+      </div>
+      <div class="table-wrap"><table class="atbl" id="cat-tbl"></table></div>
+    </div>
+    <div id="at-partners" class="hidden">
+      <div class="admin-section-head">
+        <div><div class="page-title">Farmácias Parceiras</div><p class="page-sub">Gerencie as farmácias disponíveis na plataforma</p></div>
+        <button class="btn btn-g btn-sm" onclick="openPartnerF()">+ Nova parceira</button>
+      </div>
+      <div class="table-wrap"><table class="atbl" id="partner-tbl"></table></div>
+    </div>
+    <div id="at-users" class="hidden">
+      <div class="page-title" style="margin-bottom:.2rem">Usuários</div>
+      <p class="page-sub" style="margin-bottom:1.2rem">Clientes e farmacêuticos cadastrados</p>
+      <div class="table-wrap"><table class="atbl" id="usr-tbl"></table></div>
+    </div>
+    <div id="at-orders" class="hidden">
+      <div class="page-title" style="margin-bottom:.2rem">Todos os Pedidos</div>
+      <p class="page-sub" style="margin-bottom:1.2rem">Visão geral de todas as solicitações</p>
+      <div id="adm-orders"></div>
+    </div>
+    <div id="at-settings" class="hidden">
+      <div class="page-title" style="margin-bottom:1.2rem">Configurações</div>
+      <div class="admin-settings-form">
+        <div class="fg"><label class="fl">Nome da Plataforma</label><input class="fi" id="cfg-name"/></div>
+        <div class="fg">
+          <label class="fl">Fator de Lucro Global</label>
+          <input class="fi" id="cfg-factor" type="number" step="0.1" min="1"/>
+          <p style="font-size:.72rem;color:var(--text3);margin-top:.3rem;line-height:1.6">
+            Multiplica o custo de matéria-prima. Ex: 3,5 → R$ 1,00 de MP = R$ 3,50 ao cliente.<br>
+            Ativos com fator próprio têm prioridade sobre este valor global.
+          </p>
+        </div>
+        <div class="fg">
+          <label class="fl">Custo de Embalagem por unidade (R$)</label>
+          <input class="fi" id="cfg-cap" type="number" step="0.01" min="0"/>
+          <p style="font-size:.72rem;color:var(--text3);margin-top:.3rem">Ex: R$ 0,05 por cápsula, somado ao total da fórmula.</p>
+        </div>
+        <div class="fg"><label class="fl">Formas Farmacêuticas (uma por linha)</label>
+          <textarea class="fi" id="cfg-forms" rows="4"></textarea></div>
+        <div class="fg"><label class="fl">WhatsApp da Plataforma</label><input class="fi" id="cfg-wa"/></div>
+        <button class="btn btn-g btn-sm" onclick="saveSettings()">Salvar configurações</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     MODALS
+══════════════════════════════════════════ -->
+
+<!-- CHECKOUT -->
+<div class="overlay" id="ov-checkout">
+  <div class="modal modal-w">
+    <button class="mclose" onclick="closeOv('ov-checkout')">✕</button>
+    <div class="modal-title">Confirmar solicitação de fórmula</div>
+    <div style="display:flex;gap:.6rem;flex-wrap:wrap;margin-bottom:1.1rem">
+      <span style="background:var(--green-l);color:var(--green-d);padding:.25rem .7rem;border-radius:20px;font-size:.78rem;font-weight:600" id="co-fname">—</span>
+      <span style="background:var(--bg2);color:var(--text2);padding:.25rem .7rem;border-radius:20px;font-size:.78rem;font-weight:600" id="co-caps">30 un.</span>
+      <span style="background:var(--bg2);color:var(--text2);padding:.25rem .7rem;border-radius:20px;font-size:.78rem;font-weight:600" id="co-form">Cápsula</span>
+      <span style="background:var(--bg2);color:var(--text2);padding:.25rem .7rem;border-radius:20px;font-size:.78rem;font-weight:600" id="co-partner">Farmácia</span>
+    </div>
+    <table class="stbl" style="margin-bottom:1rem">
+      <thead><tr><th>Ativo</th><th>Dose/cáps</th><th>MP total</th><th>Custo MP</th><th>Fator</th><th>Preço</th></tr></thead>
+      <tbody id="co-rows"></tbody>
+    </table>
+    <hr class="divider">
+    <div id="co-bd" style="margin-bottom:.4rem"></div>
+    <div class="price-box"><div class="pb-l">Total da fórmula</div><div class="pb-v" id="co-total">R$ 0,00</div></div>
+    <div class="fg"><label class="fl">Observações / Instruções especiais</label>
+      <textarea class="fi" id="order-obs" placeholder="Alergias, médico responsável, preferência de embalagem…"></textarea></div>
+    <button class="btn btn-o" onclick="submitOrder()">Enviar para o farmacêutico →</button>
+    <p style="font-size:.72rem;color:var(--text3);text-align:center;margin-top:.6rem">Você receberá retorno via WhatsApp após a revisão</p>
+  </div>
+</div>
+
+<!-- SUMMARY -->
+<div class="overlay" id="ov-summary">
+  <div class="modal modal-w">
+    <button class="mclose" onclick="closeOv('ov-summary')">✕</button>
+    <div class="modal-title">📋 Resumo da Fórmula</div>
+    <div id="sum-body"></div>
+  </div>
+</div>
+
+<!-- WHATSAPP -->
+<div class="overlay" id="ov-wa">
+  <div class="modal">
+    <button class="mclose" onclick="closeOv('ov-wa')">✕</button>
+    <div class="modal-title">📱 Preview WhatsApp</div>
+    <div class="wa-card">
+      <div class="wa-hdr">📗 VitaLab — Farmácia de Manipulação</div>
+      <div class="wa-bubble" id="wa-txt"></div>
+    </div>
+    <p style="font-size:.72rem;color:var(--text3);text-align:center;margin-top:.8rem">Mensagem enviada ao cliente após ação do farmacêutico</p>
+    <button class="btn btn-ghost" style="margin-top:.8rem" onclick="closeOv('ov-wa')">Fechar</button>
+  </div>
+</div>
+
+<!-- ADMIN: PRODUCT FORM -->
+<div class="overlay" id="ov-pf">
+  <div class="modal modal-w">
+    <button class="mclose" onclick="closeOv('ov-pf')">✕</button>
+    <div class="modal-title" id="pf-title">Novo ativo</div>
+    <input type="hidden" id="pf-id"/>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:.8rem">
+      <div class="fg" style="grid-column:span 2"><label class="fl">Nome do Ativo</label>
+        <input class="fi" id="pf-name" placeholder="Ex: Vitamina C (Ácido Ascórbico)"/></div>
+      <div class="fg"><label class="fl">Categoria</label><select class="fs" id="pf-cat"></select></div>
+      <div class="fg"><label class="fl">Unidade de dose</label><input class="fi" id="pf-unit" value="mg" placeholder="mg, mcg, UI…"/></div>
+    </div>
+    <div class="fg"><label class="fl">Descrição curta</label>
+      <textarea class="fi" id="pf-desc" rows="2" placeholder="Breve descrição do ativo (sem indicações terapêuticas)…"></textarea></div>
+    <div class="fg"><label class="fl">Dosagens sugeridas (separadas por vírgula)</label>
+      <input class="fi" id="pf-doses" placeholder="100, 250, 500, 1000"/></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:.8rem">
+      <div class="fg">
+        <label class="fl">Custo por grama (R$/g) — matéria-prima</label>
+        <input class="fi" id="pf-cpg" type="number" step="0.001" placeholder="0.450"/>
+        <p style="font-size:.7rem;color:var(--text3);margin-top:.25rem;line-height:1.5">
+          Cálculo: <em>(dose mg ÷ 1000) × cáps × R$/g × fator</em><br>
+          Ex: 500mg×30×R$0,45×3,5 = <strong style="color:var(--orange)">R$ 23,62</strong>
+        </p>
+      </div>
+      <div class="fg"><label class="fl">Fator de lucro próprio (opcional)</label>
+        <input class="fi" id="pf-factor" type="number" step="0.1" placeholder="Usa o global se vazio"/></div>
+    </div>
+    <div class="fg"><label class="fl">Ícone (emoji)</label>
+      <input class="fi" id="pf-ico" placeholder="💊" maxlength="4"/></div>
+    <div class="fg"><label class="fl">Visível no catálogo?</label>
+      <select class="fs" id="pf-active">
+        <option value="1">Sim — exibir para clientes</option>
+        <option value="0">Não — ocultar temporariamente</option>
+      </select></div>
+    <div style="display:flex;gap:.6rem">
+      <button class="btn btn-g" style="flex:1" onclick="savePF()">Salvar ativo</button>
+      <button class="btn btn-ghost" style="width:auto;padding:.78rem 1.4rem" onclick="closeOv('ov-pf')">Cancelar</button>
+    </div>
+    <div id="pf-msg"></div>
+  </div>
+</div>
+
+<!-- ADMIN: CATEGORY FORM -->
+<div class="overlay" id="ov-cf">
+  <div class="modal">
+    <button class="mclose" onclick="closeOv('ov-cf')">✕</button>
+    <div class="modal-title" id="cf-title">Nova categoria</div>
+    <input type="hidden" id="cf-eid"/>
+    <div class="fg"><label class="fl">Identificador (sem espaços, minúsculo)</label>
+      <input class="fi" id="cf-id" placeholder="fitoterapico"/></div>
+    <div class="fg"><label class="fl">Rótulo exibido</label>
+      <input class="fi" id="cf-label" placeholder="Fitoterápico"/></div>
+    <div class="fg"><label class="fl">Ícone (emoji)</label>
+      <input class="fi" id="cf-ico" placeholder="🌿" maxlength="4"/></div>
+    <div class="fg"><label class="fl">Cor de fundo do badge (CSS)</label>
+      <input class="fi" id="cf-bg" placeholder="rgba(26,122,74,0.12)"/></div>
+    <div class="fg"><label class="fl">Cor do texto do badge</label>
+      <input class="fi" id="cf-color" placeholder="#1f6340"/></div>
+    <div style="display:flex;gap:.6rem">
+      <button class="btn btn-g" style="flex:1" onclick="saveCF()">Salvar</button>
+      <button class="btn btn-ghost" style="width:auto;padding:.78rem 1.4rem" onclick="closeOv('ov-cf')">Cancelar</button>
+    </div>
+    <div id="cf-msg"></div>
+  </div>
+</div>
+
+<!-- ADMIN: PARTNER FORM -->
+<div class="overlay" id="ov-partnerf">
+  <div class="modal">
+    <button class="mclose" onclick="closeOv('ov-partnerf')">✕</button>
+    <div class="modal-title" id="partnerf-title">Nova Farmácia Parceira</div>
+    <input type="hidden" id="parf-id"/>
+    <div class="fg"><label class="fl">Nome da Farmácia</label><input class="fi" id="parf-name" placeholder="Farmácia Central Manipulação"/></div>
+    <div class="fg"><label class="fl">Cidade / Estado</label><input class="fi" id="parf-city" placeholder="Vitória da Conquista, BA"/></div>
+    <div class="fg"><label class="fl">WhatsApp de contato</label><input class="fi" id="parf-wa" placeholder="77999990000"/></div>
+    <div class="fg"><label class="fl">Responsável Técnico (farmacêutico)</label><input class="fi" id="parf-rt" placeholder="Dr. João Silva, CRF-BA 12345"/></div>
+    <div class="fg"><label class="fl">Usuário farmacêutico vinculado</label>
+      <select class="fs" id="parf-user"></select></div>
+    <div class="fg"><label class="fl">Especialidades (separadas por vírgula)</label>
+      <input class="fi" id="parf-specs" placeholder="Vitaminas, Fitoterápicos, Hormônios"/></div>
+    <div class="fg"><label class="fl">Status</label>
+      <select class="fs" id="parf-active">
+        <option value="1">Ativa — recebendo pedidos</option>
+        <option value="0">Inativa — pausada</option>
+      </select></div>
+    <div style="display:flex;gap:.6rem">
+      <button class="btn btn-g" style="flex:1" onclick="savePartnerF()">Salvar parceira</button>
+      <button class="btn btn-ghost" style="width:auto;padding:.78rem 1.4rem" onclick="closeOv('ov-partnerf')">Cancelar</button>
+    </div>
+    <div id="parf-msg"></div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════
+// CONFIG
+// ═══════════════════════════════════════════════════
+let CFG = {
+  name: 'VitaLab',
+  factor: 3.5,
+  capCost: 0.05,
+  forms: ['Cápsula Gelatinosa','Cápsula HPMC (Vegana)','Comprimido','Sachê','Solução Oral'],
+  wa: '5577999990000'
+};
+
+let CATS = [
+  {id:'vitamina',     label:'Vitaminas',     ico:'💊', bg:'rgba(45,134,83,.12)',  color:'#1f6340'},
+  {id:'fitoterapico', label:'Fitoterápicos', ico:'🌿', bg:'rgba(34,150,90,.1)',   color:'#1a6635'},
+  {id:'mineral',      label:'Minerais',      ico:'⚡', bg:'rgba(242,112,33,.12)', color:'#92400e'},
+  {id:'aminoacido',   label:'Aminoácidos',   ico:'🔬', bg:'rgba(74,108,247,.12)', color:'#3730a3'},
+  {id:'probiotico',   label:'Probióticos',   ico:'🦠', bg:'rgba(150,60,190,.1)',  color:'#5b21b6'},
+];
+
+let PARTNERS = [
+  {id:1, name:'Farmácia Central', city:'Vitória da Conquista, BA', wa:'77999110099', rt:'Dra. Carla Figueiredo, CRF-BA 9876', user:'farmaceutico', specs:['Vitaminas','Fitoterápicos','Minerais'], active:true},
+  {id:2, name:'Pharma Premium',   city:'Salvador, BA',             wa:'71999220088', rt:'Dr. Lucas Neves, CRF-BA 5432',       user:'farmaceutico', specs:['Aminoácidos','Probióticos','Hormonais'], active:true},
+  {id:3, name:'BioManipular',     city:'Feira de Santana, BA',     wa:'75999330077', rt:'Dra. Ana Costa, CRF-BA 3210',        user:'farmaceutico', specs:['Fitoterápicos','Suplementos'], active:false},
+];
+let PARTNER_SEQ = 4;
+let selectedPartner = 1;
+
+let PRODS = [
+  {id:1,  name:'Vitamina C',          cat:'vitamina',     unit:'mg',  ico:'🍊', desc:'Ácido Ascórbico. Antioxidante e suporte imunológico.',                  cpg:0.04,  doses:[250,500,1000,2000],   factor:null, active:true},
+  {id:2,  name:'Vitamina D3',          cat:'vitamina',     unit:'UI',  ico:'☀️', desc:'Colecalciferol. Saúde óssea e função imunológica.',                    cpg:2.80,  doses:[1000,2000,5000,10000], factor:null, active:true},
+  {id:3,  name:'Vitamina B12',         cat:'vitamina',     unit:'mcg', ico:'💉', desc:'Cianocobalamina. Energia e função neurológica.',                       cpg:180.0, doses:[500,1000,2000,5000],   factor:null, active:true},
+  {id:4,  name:'Vitamina E',           cat:'vitamina',     unit:'mg',  ico:'🌻', desc:'Tocoferol. Antioxidante lipossolúvel.',                                cpg:0.55,  doses:[100,200,400,800],      factor:null, active:true},
+  {id:5,  name:'Vitamina B6',          cat:'vitamina',     unit:'mg',  ico:'🟡', desc:'Piridoxina. Metabolismo proteico.',                                    cpg:0.12,  doses:[50,100,200,300],       factor:null, active:true},
+  {id:6,  name:'Colágeno Tipo II',     cat:'aminoacido',   unit:'mg',  ico:'💪', desc:'Colágeno Hidrolisado. Articulações e tecido conjuntivo.',               cpg:0.08,  doses:[40,100,300,600],       factor:null, active:true},
+  {id:7,  name:'Ashwagandha KSM-66',   cat:'fitoterapico', unit:'mg',  ico:'🌾', desc:'Withania somnifera. Extrato padronizado de alta concentração.',         cpg:0.65,  doses:[300,500,600,900],       factor:null, active:true},
+  {id:8,  name:'Rhodiola Rosea',       cat:'fitoterapico', unit:'mg',  ico:'🌸', desc:'Extrato de raiz. Alta padronização de rosavinas.',                     cpg:0.80,  doses:[200,400,600,800],       factor:null, active:true},
+  {id:9,  name:'Ginkgo Biloba',        cat:'fitoterapico', unit:'mg',  ico:'🍃', desc:'24% Ginkgoflavonas. Extrato padronizado.',                             cpg:0.55,  doses:[40,80,120,160],         factor:null, active:true},
+  {id:10, name:'Cúrcuma BCM-95',       cat:'fitoterapico', unit:'mg',  ico:'🟠', desc:'95% Curcumina. Alta biodisponibilidade com BCM-95.',                   cpg:0.75,  doses:[250,500,1000,1500],     factor:null, active:true},
+  {id:11, name:'Passiflora',           cat:'fitoterapico', unit:'mg',  ico:'🌺', desc:'Passiflora incarnata. Extrato padronizado.',                           cpg:0.30,  doses:[200,300,400,500],       factor:null, active:true},
+  {id:12, name:'Valeriana',            cat:'fitoterapico', unit:'mg',  ico:'🌙', desc:'Valeriana officinalis. Extrato de raiz.',                              cpg:0.25,  doses:[300,450,600,750],       factor:null, active:true},
+  {id:13, name:'Magnésio Quelato',     cat:'mineral',      unit:'mg',  ico:'⚡', desc:'Bisglicinato de magnésio. Alta absorção.',                             cpg:0.22,  doses:[150,300,400,500],       factor:null, active:true},
+  {id:14, name:'Zinco Quelato',        cat:'mineral',      unit:'mg',  ico:'🔩', desc:'Bisglicinato de zinco. Alta biodisponibilidade.',                      cpg:0.35,  doses:[15,25,50,75],           factor:null, active:true},
+  {id:15, name:'Selênio Quelato',      cat:'mineral',      unit:'mcg', ico:'🔮', desc:'Selênio quelado. Alta absorção.',                                     cpg:45.0,  doses:[100,200,400,600],       factor:null, active:true},
+  {id:16, name:'Ferro Quelato',        cat:'mineral',      unit:'mg',  ico:'🩸', desc:'Bisglicinato ferroso. Baixo impacto gastrointestinal.',                cpg:0.40,  doses:[15,30,60,100],          factor:null, active:true},
+  {id:17, name:'L-Triptofano',         cat:'aminoacido',   unit:'mg',  ico:'😴', desc:'Triptofano livre cristalino. Alta pureza.',                            cpg:0.55,  doses:[250,500,750,1000],      factor:null, active:true},
+  {id:18, name:'L-Taurina',            cat:'aminoacido',   unit:'mg',  ico:'⚗️', desc:'Taurina livre. Grau farmacêutico.',                                   cpg:0.18,  doses:[500,1000,2000,3000],    factor:null, active:true},
+  {id:19, name:'L-Glutamina',          cat:'aminoacido',   unit:'mg',  ico:'💚', desc:'Glutamina livre cristalina. Grau farmacêutico.',                       cpg:0.15,  doses:[1000,2000,5000,8000],   factor:null, active:true},
+  {id:20, name:'NAC',                  cat:'aminoacido',   unit:'mg',  ico:'🧪', desc:'N-Acetil Cisteína. Grau farmacêutico.',                               cpg:0.50,  doses:[300,600,1200,1800],     factor:null, active:true},
+  {id:21, name:'L. acidophilus',       cat:'probiotico',   unit:'mg',  ico:'🦠', desc:'Lactobacillus acidophilus. 5 bilhões UFC/cápsula.',                    cpg:2.20,  doses:[100,200,300,500],       factor:null, active:true},
+  {id:22, name:'B. lactis',            cat:'probiotico',   unit:'mg',  ico:'🔴', desc:'Bifidobacterium lactis. 5 bilhões UFC/cápsula.',                       cpg:2.40,  doses:[100,200,300,500],       factor:null, active:true},
+];
+let PROD_SEQ = 23;
+
+let USERS = [
+  {username:'cliente1',    password:'123',      role:'client', name:'Ana Oliveira',         phone:'77999110001'},
+  {username:'cliente2',    password:'123',      role:'client', name:'Bruno Mendes',          phone:'77999110002'},
+  {username:'farmaceutico',password:'admin',    role:'pharma', name:'Dra. Carla Figueiredo', phone:'77999110099'},
+  {username:'admin',       password:'admin123', role:'admin',  name:'Administrador',         phone:''},
+];
+
+let ORDERS = [
+  {id:'VTL-0001',clientUser:'cliente1',clientName:'Ana Oliveira',clientPhone:'77999110001',
+   date:'10/01/2025 09:32',formulaName:'Fórmula Imunidade',form:'Cápsula Gelatinosa',caps:30,
+   partnerId:1,partnerName:'Farmácia Central',status:'approved',
+   items:[
+     {productId:1, name:'Vitamina C',     unit:'mg',  dosePerCap:1000,cpg:0.04,factor:3.5,rawCost:1.20, price:4.20},
+     {productId:6, name:'Colágeno Tipo II',unit:'mg', dosePerCap:40,  cpg:0.08,factor:3.5,rawCost:0.096,price:0.34},
+     {productId:10,name:'Cúrcuma BCM-95', unit:'mg',  dosePerCap:300, cpg:0.75,factor:3.5,rawCost:6.75, price:23.63},
+   ],capCost:0.05,capsTotal:1.50,total:29.67,obs:'',pharmacistNote:'Excelente composição. Aprovada!'},
+  {id:'VTL-0002',clientUser:'cliente2',clientName:'Bruno Mendes',clientPhone:'77999110002',
+   date:'12/01/2025 14:17',formulaName:'Fórmula Foco',form:'Cápsula HPMC (Vegana)',caps:60,
+   partnerId:1,partnerName:'Farmácia Central',status:'review',
+   items:[
+     {productId:7, name:'Ashwagandha KSM-66',unit:'mg',dosePerCap:600,cpg:0.65,factor:3.5,rawCost:23.40,price:81.90},
+     {productId:8, name:'Rhodiola Rosea',    unit:'mg',dosePerCap:400,cpg:0.80,factor:3.5,rawCost:19.20,price:67.20},
+     {productId:17,name:'L-Triptofano',      unit:'mg',dosePerCap:500,cpg:0.55,factor:3.5,rawCost:8.25, price:28.87},
+   ],capCost:0.05,capsTotal:4.50,total:182.47,obs:'Uso esportivo',pharmacistNote:''},
+];
+let ORDER_SEQ = 3;
+
+let fItems = [], fCaps = 30, currentUser = null;
+
+// ═══════════════════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════════════════
+const $    = id => document.getElementById(id);
+const fBRL = v  => 'R$ ' + Number(v).toFixed(2).replace('.',',');
+const fG   = mg => mg >= 1000 ? (mg/1000).toFixed(2)+'g' : Number(mg).toFixed(0)+'mg';
+const catInfo     = id => CATS.find(c=>c.id===id)     || {label:id,ico:'💊',bg:'rgba(100,100,100,.1)',color:'#555'};
+const partnerInfo = id => PARTNERS.find(p=>p.id===id) || {name:'—',city:'—'};
+
+function iCalc(cpg,factor,dose,caps){
+  const g=(dose/1000)*caps, raw=g*cpg, f=factor??CFG.factor;
+  return {g, raw, price:parseFloat((raw*f).toFixed(4))};
+}
+function fCalc(items,caps){
+  let raw=0,price=0;
+  items.forEach(it=>{const c=iCalc(it.cpg,it.factor,it.dosePerCap,caps);raw+=c.raw;price+=c.price;});
+  const capsTotal=parseFloat((caps*CFG.capCost).toFixed(2));
+  return {raw,price,capsTotal,total:parseFloat((price+capsTotal).toFixed(2))};
+}
+const sLabel = s=>({review:'Em revisão',approved:'Aprovado',adjustment:'Ajuste solicitado',completed:'Concluído'}[s]||s);
+const sCls   = s=>({review:'s-review',approved:'s-approved',adjustment:'s-adjustment',completed:'s-completed'}[s]||'s-review');
+
+function toast(msg,type='ok'){
+  const t=document.createElement('div');
+  t.className=`toast ${type}`;t.textContent=msg;
+  document.body.appendChild(t);setTimeout(()=>t.remove(),3000);
+}
+const openOv  = id=>$(id).classList.add('active');
+const closeOv = id=>$(id).classList.remove('active');
+function showScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));$(id).classList.add('active');}
+
+// ═══════════════════════════════════════════════════
+// AUTH
+// ═══════════════════════════════════════════════════
+function ltab(t){
+  $('fl').classList.toggle('hidden',t!=='login');
+  $('fr').classList.toggle('hidden',t!=='register');
+  document.querySelectorAll('.tab2').forEach((b,i)=>b.classList.toggle('active',(i===0&&t==='login')||(i===1&&t==='register')));
+}
+function doLogin(){
+  const u=$('lu').value.trim(),p=$('lp').value;
+  const user=USERS.find(x=>x.username===u&&x.password===p);
+  if(!user){$('lmsg').innerHTML='<div class="lmsg le">Usuário ou senha incorretos.</div>';return;}
+  currentUser=user;
+  ({client:initClient,pharma:initPharma,admin:initAdmin}[user.role]||initClient)();
+}
+function doReg(){
+  const name=$('rn').value.trim(),u=$('ru').value.trim(),ph=$('rph').value.trim(),p=$('rp').value;
+  if(!name||!u||!ph||!p){$('rmsg').innerHTML='<div class="lmsg le">Preencha todos os campos.</div>';return;}
+  if(USERS.find(x=>x.username===u)){$('rmsg').innerHTML='<div class="lmsg le">Usuário já existe.</div>';return;}
+  USERS.push({username:u,password:p,role:'client',name,phone:ph.replace(/\D/g,'')});
+  $('rmsg').innerHTML='<div class="lmsg ls">Conta criada! Faça login.</div>';
+  setTimeout(()=>ltab('login'),1500);
+}
+function logout(){currentUser=null;fItems=[];showScreen('screen-login');}
+
+// ═══════════════════════════════════════════════════
+// CLIENT
+// ═══════════════════════════════════════════════════
+function initClient(){
+  showScreen('screen-client');
+  $('cli-name-nav').textContent=currentUser.name;
+  $('form-sel').innerHTML=CFG.forms.map(f=>`<option value="${f}">${f}</option>`).join('');
+  fItems=[]; fCaps=30; selectedPartner=PARTNERS.find(p=>p.active)?.id||1;
+  $('caps-val').textContent=fCaps;
+  cliView('catalog'); buildPartners(); buildCats(); filterP(); renderCart();
+}
+function cliView(v){
+  $('cv-catalog').classList.toggle('hidden',v!=='catalog');
+  $('cv-orders').classList.toggle('hidden',v!=='orders');
+  if(v==='orders') renderMyOrders();
+  if(v==='catalog') filterP();
+}
+
+// Partners strip
+function buildPartners(){
+  const el=$('partners-row');
+  el.innerHTML=PARTNERS.filter(p=>p.active).map(p=>`
+    <div class="partner-card ${p.id===selectedPartner?'active':''}" onclick="selectPartner(${p.id})">
+      <div class="partner-ico">🏥</div>
+      <div>
+        <div class="partner-name">${p.name}</div>
+        <div class="partner-city">${p.city}</div>
+        <div style="margin-top:.25rem;display:flex;gap:.3rem;flex-wrap:wrap">
+          ${p.specs.slice(0,2).map(s=>`<span style="font-size:.63rem;background:var(--green-l);color:var(--green-d);padding:.12rem .4rem;border-radius:4px;font-weight:600">${s}</span>`).join('')}
+        </div>
+      </div>
+      ${p.id===selectedPartner?'<div class="partner-tag">✓ Selecionada</div>':''}
+    </div>`).join('');
+}
+function selectPartner(id){selectedPartner=id;buildPartners();}
+
+// Categories strip
+function buildCats(){
+  $('cat-strip').innerHTML=
+    `<button class="cat-pill active" data-c="all" onclick="catClick(this,'all')"><span class="cat-ico">✨</span>Todos</button>`+
+    CATS.map(c=>`<button class="cat-pill" data-c="${c.id}" onclick="catClick(this,'${c.id}')"><span class="cat-ico">${c.ico}</span>${c.label}</button>`).join('');
+}
+function catClick(el,cat){
+  document.querySelectorAll('.cat-pill').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');
+  const names={all:'Todos os ativos',...Object.fromEntries(CATS.map(c=>[c.id,c.label]))};
+  $('prod-section-title').textContent=names[cat]||'Ativos';
+  filterP();
+}
+function filterP(){
+  const cat=document.querySelector('.cat-pill.active')?.dataset.c||'all';
+  const q=($('srch')?.value||'').toLowerCase();
+  let list=PRODS.filter(p=>p.active);
+  if(cat!=='all') list=list.filter(p=>p.cat===cat);
+  if(q) list=list.filter(p=>p.name.toLowerCase().includes(q)||p.desc.toLowerCase().includes(q));
+  renderGrid(list);
+}
+function renderGrid(prods){
+  const el=$('prod-grid');
+  if(!prods.length){el.innerHTML='<p class="muted" style="grid-column:span 6;padding:2rem 0;font-size:.85rem">Nenhum ativo encontrado.</p>';return;}
+  el.innerHTML=prods.map(p=>{
+    const ci=catInfo(p.cat);
+    const inF=fItems.find(i=>i.productId===p.id);
+    return `<div class="prod-card" onclick="addActive(${p.id})">
+      <div class="prod-card-top">
+        ${p.ico?`<div class="prod-card-ico">${p.ico}</div>`:''}
+        <span class="prod-cat-badge" style="background:${ci.bg};color:${ci.color}">${ci.label}</span>
+      </div>
+      <div class="prod-card-body">
+        <div class="prod-name">${p.name}</div>
+        <div class="prod-cpg">R$ ${p.cpg.toFixed(3).replace('.',',')}/g</div>
+        <button class="prod-add-btn${inF?' in-cart':''}">${inF?'✓ Na fórmula':'+ Adicionar'}</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+function addActive(pid){
+  const p=PRODS.find(x=>x.id===pid);
+  if(!p) return;
+  if(fItems.find(i=>i.productId===pid)){toast('Já está na fórmula. Ajuste a dose ao lado.','info');return;}
+  fItems.push({id:Date.now(),productId:pid,name:p.name,unit:p.unit,ico:p.ico||'💊',cpg:p.cpg,factor:p.factor,dosePerCap:p.doses[1]||p.doses[0]});
+  renderCart();filterP();
+  toast(`${p.name} adicionado!`,'ok');
+}
+
+// Caps control
+function chgCaps(d){fCaps=Math.max(10,Math.min(360,fCaps+d));$('caps-val').textContent=fCaps;renderCart();}
+function recalc(){renderCart();}
+
+// Cart
+function renderCart(){
+  const el=$('cart-items');
+  if(!fItems.length){
+    el.innerHTML=`<div class="cart-empty"><span class="cart-empty-ico">🧪</span>Monte sua fórmula selecionando ativos no catálogo.<br><br><span style="color:var(--green);font-weight:600">Dica:</span> Você pode combinar quantos ativos quiser em uma mesma fórmula.</div>`;
+    $('cart-badge').textContent='0'; $('cart-total').textContent='R$ 0,00';
+    $('btn-checkout').disabled=true; $('cart-breakdown').innerHTML=''; return;
+  }
+  el.innerHTML=fItems.map(it=>{
+    const p=PRODS.find(x=>x.id===it.productId);
+    const doses=p?p.doses:[];
+    const isCustom=!doses.includes(it.dosePerCap);
+    const c=iCalc(it.cpg,it.factor,it.dosePerCap,fCaps);
+    return `<div class="cart-item">
+      <div class="cart-item-top">
+        <div class="cart-item-name">${it.ico||'💊'} ${it.name}</div>
+        <button class="cart-item-del" onclick="removeActive(${it.id})" title="Remover">✕</button>
+      </div>
+      <div class="cart-dose-row">
+        <select class="dose-sel" onchange="onDoseSel(${it.id},this)">
+          ${doses.map(d=>`<option value="${d}" ${d===it.dosePerCap&&!isCustom?'selected':''}>${d} ${it.unit}</option>`).join('')}
+          <option value="__c" ${isCustom?'selected':''}>Personalizada</option>
+        </select>
+        ${isCustom?`<input class="dose-custom" type="number" min="1" value="${it.dosePerCap}"
+          oninput="setDose(${it.id},parseFloat(this.value));renderCart()" /><span class="dose-unit">${it.unit}</span>`:''}
+      </div>
+      <div class="cart-item-price">
+        <span class="ci-price">${fBRL(c.price)}</span>
+        <span class="ci-detail">${fG(it.dosePerCap*fCaps)} · MP: ${fBRL(c.raw)}</span>
+      </div>
+    </div>`;
+  }).join('');
+  const {raw,capsTotal,total}=fCalc(fItems,fCaps);
+  $('cart-badge').textContent=fItems.length;
+  $('cart-total').textContent=fBRL(total);
+  $('btn-checkout').disabled=false;
+  $('cart-breakdown').innerHTML=
+    fItems.map(it=>{
+      const c=iCalc(it.cpg,it.factor,it.dosePerCap,fCaps);
+      const sn=it.name.split(' ').slice(0,2).join(' ');
+      return `<div class="brow"><span class="brow-l">${sn} ${it.dosePerCap}${it.unit}</span><span class="brow-v">${fBRL(c.price)}</span></div>`;
+    }).join('')+
+    `<div class="brow"><span class="brow-l">Embalagem (${fCaps}×${fBRL(CFG.capCost)})</span><span class="brow-v">${fBRL(capsTotal)}</span></div>`;
+}
+function onDoseSel(id,sel){
+  if(sel.value==='__c'){const it=fItems.find(i=>i.id===id);if(it)it.dosePerCap=-1;renderCart();}
+  else{setDose(id,parseFloat(sel.value));renderCart();}
+}
+function setDose(id,val){const it=fItems.find(i=>i.id===id);if(it&&val>0)it.dosePerCap=val;}
+function removeActive(id){fItems=fItems.filter(i=>i.id!==id);renderCart();filterP();}
+
+// Checkout
+function openCheckout(){
+  if(!fItems.length) return;
+  const pn=partnerInfo(selectedPartner);
+  const caps=fCaps,form=$('form-sel').value,fname=$('formula-name').value.trim()||'Fórmula sem nome';
+  $('co-fname').textContent=fname;
+  $('co-caps').textContent=caps+' unidades';
+  $('co-form').textContent=form;
+  $('co-partner').textContent='🏥 '+pn.name;
+  $('co-rows').innerHTML=fItems.map(it=>{
+    const c=iCalc(it.cpg,it.factor,it.dosePerCap,caps);
+    return `<tr><td>${it.name}</td><td class="mono" style="font-size:.73rem">${it.dosePerCap} ${it.unit}</td>
+    <td class="mono" style="font-size:.73rem">${fG(it.dosePerCap*caps)}</td>
+    <td style="color:var(--text3);font-size:.73rem">${fBRL(c.raw)}</td>
+    <td style="color:var(--text3);font-size:.73rem">${(it.factor??CFG.factor)}×</td>
+    <td>${fBRL(c.price)}</td></tr>`;
+  }).join('');
+  const {raw,capsTotal,total}=fCalc(fItems,caps);
+  $('co-bd').innerHTML=`
+    <div class="brow"><span class="brow-l">Custo total de matéria-prima</span><span class="brow-v">${fBRL(raw)}</span></div>
+    <div class="brow"><span class="brow-l">Embalagem (${caps}×${fBRL(CFG.capCost)})</span><span class="brow-v">${fBRL(capsTotal)}</span></div>`;
+  $('co-total').textContent=fBRL(total);
+  $('order-obs').value='';
+  openOv('ov-checkout');
+}
+function submitOrder(){
+  const caps=fCaps,form=$('form-sel').value;
+  const fname=$('formula-name').value.trim()||'Fórmula sem nome';
+  const pn=partnerInfo(selectedPartner);
+  const {capsTotal,total}=fCalc(fItems,caps);
+  const id=`VTL-${String(ORDER_SEQ++).padStart(4,'0')}`;
+  const items=fItems.map(it=>{
+    const c=iCalc(it.cpg,it.factor,it.dosePerCap,caps);
+    return {productId:it.productId,name:it.name,unit:it.unit,ico:it.ico,
+            dosePerCap:it.dosePerCap,cpg:it.cpg,
+            factor:it.factor??CFG.factor,rawCost:parseFloat(c.raw.toFixed(3)),price:parseFloat(c.price.toFixed(2))};
+  });
+  ORDERS.unshift({id,clientUser:currentUser.username,clientName:currentUser.name,
+    clientPhone:currentUser.phone,date:new Date().toLocaleString('pt-BR'),
+    formulaName:fname,form,caps,partnerId:selectedPartner,partnerName:pn.name,
+    status:'review',items,capCost:CFG.capCost,capsTotal,total,
+    obs:$('order-obs').value,pharmacistNote:''});
+  fItems=[];renderCart();filterP();
+  $('formula-name').value='';
+  closeOv('ov-checkout');
+  toast(`Pedido ${id} enviado para revisão!`,'ok');
+}
+
+// My orders
+function renderMyOrders(){
+  const list=ORDERS.filter(o=>o.clientUser===currentUser.username);
+  const el=$('my-orders');
+  if(!list.length){el.innerHTML='<p class="muted" style="font-size:.85rem">Você ainda não fez nenhum pedido.</p>';return;}
+  el.innerHTML=list.map(o=>`
+    <div class="ocard">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:.6rem">
+        <div>
+          <div class="oid">${o.id} · ${o.date}</div>
+          <div style="font-size:1rem;font-weight:800;margin-top:.15rem">${o.formulaName}</div>
+          <div style="font-size:.75rem;color:var(--text3);margin-top:.15rem">${o.caps} un. · ${o.form} · ${o.partnerName}</div>
+        </div>
+        <span class="ostatus ${sCls(o.status)}">${sLabel(o.status)}</span>
+      </div>
+      <div style="font-size:.76rem;color:var(--text3);margin-bottom:.45rem">${o.items.map(i=>`${i.ico||''} ${i.name} ${i.dosePerCap}${i.unit}`).join(' + ')}</div>
+      <div class="mono" style="font-size:.88rem;color:var(--orange);font-weight:700">${fBRL(o.total)}</div>
+      ${o.pharmacistNote?`<div class="onote ${o.status==='adjustment'?'note-adj':'note-apr'}">
+        ${o.status==='adjustment'?'⚠️':'✅'} <strong>Farmacêutico:</strong> ${o.pharmacistNote}</div>`:''}
+    </div>`).join('');
+}
+
+// ═══════════════════════════════════════════════════
+// FARMACÊUTICO
+// ═══════════════════════════════════════════════════
+function initPharma(){showScreen('screen-pharma');renderPharma();}
+function renderPharma(){renderPhStats();renderPhPending();renderPhHistory();}
+function renderPhStats(){
+  const pen=ORDERS.filter(o=>o.status==='review').length;
+  const adj=ORDERS.filter(o=>o.status==='adjustment').length;
+  const apr=ORDERS.filter(o=>['approved','completed'].includes(o.status)).length;
+  const tot=ORDERS.reduce((s,o)=>s+o.total,0);
+  $('ph-stats').innerHTML=`
+    <div class="stat-card"><div class="stat-label">Em revisão</div><div class="stat-val sv-o">${pen}</div></div>
+    <div class="stat-card"><div class="stat-label">Ajuste solicitado</div><div class="stat-val sv-b">${adj}</div></div>
+    <div class="stat-card"><div class="stat-label">Aprovados</div><div class="stat-val sv-g">${apr}</div></div>
+    <div class="stat-card"><div class="stat-label">Faturamento</div><div class="stat-val sv-t" style="font-size:1.1rem">${fBRL(tot)}</div></div>`;
+}
+function renderPhPending(){
+  const pen=ORDERS.filter(o=>o.status==='review');
+  const el=$('ph-pending');
+  if(!pen.length){el.innerHTML='<p class="muted" style="font-size:.85rem">Nenhum pedido aguardando. ✓</p>';return;}
+  el.innerHTML=pen.map(o=>rCardHTML(o)).join('');
+}
+function renderPhHistory(){
+  const hist=ORDERS.filter(o=>o.status!=='review');
+  const el=$('ph-history');
+  if(!hist.length){el.innerHTML='<p class="muted" style="font-size:.85rem">Sem histórico.</p>';return;}
+  el.innerHTML=hist.map(o=>`
+    <div class="hist-card">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:.4rem">
+        <div>
+          <div style="font-size:.95rem;font-weight:800">${o.formulaName}</div>
+          <div style="font-size:.73rem;color:var(--text3)">${o.clientName} · ${o.id} · ${o.date}</div>
+        </div>
+        <div style="text-align:right">
+          <span class="ostatus ${sCls(o.status)}">${sLabel(o.status)}</span>
+          <div class="mono" style="font-size:.82rem;color:var(--orange);font-weight:700;margin-top:.3rem">${fBRL(o.total)}</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:.4rem;flex-wrap:wrap">
+        <button class="btn btn-ghost btn-xs" onclick="openSummary('${o.id}')">📋 Resumo</button>
+        <button class="btn btn-ghost btn-xs" onclick="openWA('${o.id}')">📱 WhatsApp</button>
+      </div>
+    </div>`).join('');
+}
+function rCardHTML(o){
+  return `<div class="rcard">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:.7rem">
+      <div>
+        <div class="rpatient">${o.clientName}</div>
+        <div class="rformula">${o.formulaName}</div>
+        <div class="rinfo">${o.id} · ${o.date} · ${o.caps} un. · ${o.form} · ${o.partnerName}</div>
+      </div>
+      <span class="ostatus s-review">Em revisão</span>
+    </div>
+    <div style="margin-bottom:.6rem">
+      <div style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text3);margin-bottom:.35rem">Composição</div>
+      ${o.items.map(i=>`
+        <div class="ritem">
+          <div><div class="ri-name">${i.ico||''} ${i.name}</div>
+            <div class="ri-sub">${i.dosePerCap}${i.unit}/cáps · ${fG(i.dosePerCap*o.caps)} total · R$${i.cpg.toFixed(3)}/g · fator ${i.factor}×</div></div>
+          <div class="ri-price">${fBRL(i.price)}</div>
+        </div>`).join('')}
+    </div>
+    <div style="display:flex;justify-content:space-between;font-size:.75rem;padding:.3rem 0;border-top:1px solid var(--border)">
+      <span class="muted">Embalagem (${o.caps}×${fBRL(o.capCost)})</span>
+      <span class="mono" style="color:var(--text2)">${fBRL(o.capsTotal)}</span>
+    </div>
+    <div class="r-total-row"><span>Total</span><span class="mono" style="color:var(--orange)">${fBRL(o.total)}</span></div>
+    ${o.obs?`<p style="font-size:.75rem;color:var(--text3);margin-bottom:.7rem;padding:.5rem .7rem;background:var(--bg);border-radius:8px">📝 Obs: ${o.obs}</p>`:''}
+    <textarea class="pharma-note" id="pn-${o.id}" placeholder="Observação para o cliente (obrigatória ao solicitar ajuste)…">${o.pharmacistNote||''}</textarea>
+    <div class="rbtns">
+      <button class="btn btn-g btn-sm" style="flex:1" onclick="approveOrder('${o.id}')">✓ Aprovar</button>
+      <button class="btn" style="flex:1;background:var(--blue-l);color:var(--blue);border:1.5px solid #a5b4fc;font-family:var(--font);font-size:.82rem;font-weight:700;padding:.42rem .85rem;border-radius:var(--r);cursor:pointer;width:auto" onclick="requestAdj('${o.id}')">↺ Solicitar Ajuste</button>
+      <button class="btn btn-ghost btn-xs" onclick="openSummary('${o.id}')">📋</button>
+      <button class="btn btn-ghost btn-xs" onclick="openWA('${o.id}')">📱</button>
+    </div>
+  </div>`;
+}
+function approveOrder(id){
+  const o=ORDERS.find(x=>x.id===id);
+  o.status='approved';o.pharmacistNote=$(`pn-${id}`)?.value||'';
+  renderPharma();toast(`Pedido ${id} aprovado!`,'ok');
+}
+function requestAdj(id){
+  const o=ORDERS.find(x=>x.id===id);
+  const note=$(`pn-${id}`)?.value?.trim()||'';
+  if(!note){toast('Preencha a observação com o ajuste necessário.','err');return;}
+  o.status='adjustment';o.pharmacistNote=note;
+  renderPharma();toast(`Ajuste solicitado — pedido ${id}.`,'info');
+}
+
+// Summary
+function openSummary(id){
+  const o=ORDERS.find(x=>x.id===id);
+  $('sum-body').innerHTML=`
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:.35rem;font-size:.8rem;padding:.9rem;background:var(--bg);border-radius:var(--r);border:1px solid var(--border);margin-bottom:1rem">
+      <div><span class="muted">Pedido:</span> <strong class="mono">${o.id}</strong></div>
+      <div><span class="muted">Data:</span> ${o.date}</div>
+      <div><span class="muted">Cliente:</span> ${o.clientName}</div>
+      <div><span class="muted">WhatsApp:</span> +55 ${o.clientPhone}</div>
+      <div><span class="muted">Fórmula:</span> <strong>${o.formulaName}</strong></div>
+      <div><span class="muted">Farmácia:</span> ${o.partnerName}</div>
+      <div><span class="muted">Unidades:</span> ${o.caps} · ${o.form}</div>
+      <div><span class="muted">Status:</span> <span class="ostatus ${sCls(o.status)}">${sLabel(o.status)}</span></div>
+    </div>
+    <table class="stbl" style="margin-bottom:1rem">
+      <thead><tr><th>Ativo</th><th>Dose/cáps</th><th>MP total</th><th>Custo MP</th><th>Fator</th><th>Preço</th></tr></thead>
+      <tbody>
+        ${o.items.map(i=>`<tr>
+          <td>${i.ico||''} ${i.name}</td><td>${i.dosePerCap} ${i.unit}</td>
+          <td class="mono" style="font-size:.73rem">${fG(i.dosePerCap*o.caps)}</td>
+          <td style="color:var(--text3);font-size:.73rem">${fBRL(i.rawCost||0)}</td>
+          <td style="color:var(--text3);font-size:.73rem">${i.factor}×</td>
+          <td>${fBRL(i.price)}</td></tr>`).join('')}
+        <tr><td colspan="5" style="color:var(--text3)">Embalagem (${o.caps}×${fBRL(o.capCost)})</td><td>${fBRL(o.capsTotal)}</td></tr>
+      </tbody>
+    </table>
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:.5rem 0;border-top:1px solid var(--border);font-weight:700">
+      <span>Total</span><span class="mono" style="color:var(--orange);font-size:1.1rem">${fBRL(o.total)}</span>
+    </div>
+    ${o.obs?`<div class="onote note-adj" style="margin-top:.7rem">📝 Obs cliente: ${o.obs}</div>`:''}
+    ${o.pharmacistNote?`<div class="onote ${o.status==='adjustment'?'note-adj':'note-apr'}" style="margin-top:.4rem">
+      ${o.status==='adjustment'?'⚠️':'✅'} Farmacêutico: ${o.pharmacistNote}</div>`:''}
+    <div style="margin-top:1rem"><button class="btn btn-ghost btn-sm" onclick="openWA('${o.id}');closeOv('ov-summary')">📱 Abrir preview WhatsApp</button></div>`;
+  openOv('ov-summary');
+}
+
+// WA
+function openWA(id){
+  const o=ORDERS.find(x=>x.id===id);
+  const comp=o.items.map(i=>`  ${i.ico||'•'} ${i.name} — ${i.dosePerCap}${i.unit}/cáps (${fG(i.dosePerCap*o.caps)} total)`).join('\n');
+  let msg='';
+  if(o.status==='approved'){
+    msg=`✅ *VitaLab — ${o.partnerName}*\n\nOlá, *${o.clientName}*! 👋\n\nSua fórmula *${o.formulaName}* foi *APROVADA*! 🎉\n\n📋 *Composição:*\n${comp}\n\n🔹 ${o.caps} unidades · ${o.form}\n💰 *Total: ${fBRL(o.total)}*\n\n${o.pharmacistNote?`💬 _"${o.pharmacistNote}"_\n\n`:''}Em breve entraremos em contato para confirmar prazo e pagamento.\n\nObrigado pela confiança! 🌿`;
+  } else if(o.status==='adjustment'){
+    msg=`⚠️ *VitaLab — ${o.partnerName}*\n\nOlá, *${o.clientName}*!\n\nNosso farmacêutico analisou sua fórmula *${o.formulaName}* e solicita *ajustes*.\n\n💬 *Observação:*\n_"${o.pharmacistNote}"_\n\n📋 *Composição atual:*\n${comp}\n\nAcesse o app para solicitar uma nova fórmula ou entre em contato conosco. 💊`;
+  } else if(o.status==='review'){
+    msg=`🔬 *VitaLab — ${o.partnerName}*\n\nOlá, *${o.clientName}*!\n\nRecebemos sua fórmula *${o.formulaName}* com ${o.items.length} ativo(s) para ${o.caps} unidades. ✓\n\nEm *revisão farmacêutica*. ⏳\n\nVocê será notificado assim que a análise for concluída.\n\nObrigado pela preferência! 🌱`;
+  } else {
+    msg=`*VitaLab — ${o.partnerName}*\n\nOlá, *${o.clientName}*!\n\n*${o.formulaName}* — ${sLabel(o.status).toUpperCase()}\n\nObrigado! 🌿`;
+  }
+  $('wa-txt').textContent=msg; openOv('ov-wa');
+}
+
+// ═══════════════════════════════════════════════════
+// ADMIN
+// ═══════════════════════════════════════════════════
+function initAdmin(){showScreen('screen-admin');loadSettings();renderAdmProds();}
+function atab(el,t){
+  document.querySelectorAll('.admin-tab').forEach(b=>b.classList.remove('active'));el.classList.add('active');
+  ['products','categories','partners','users','orders','settings'].forEach(k=>$(`at-${k}`).classList.toggle('hidden',k!==t));
+  ({products:renderAdmProds,categories:renderAdmCats,partners:renderAdmPartners,users:renderAdmUsers,orders:renderAdmOrders}[t]||(() => {}))();
+}
+
+// Products
+function renderAdmProds(){
+  $('prod-tbl').innerHTML=`<thead><tr><th>Ativo</th><th>Cat.</th><th>Un.</th><th>Dosagens</th><th>R$/g (MP)</th><th>Fator</th><th>Exemplo preço</th><th>Status</th><th></th></tr></thead><tbody>`+
+  PRODS.map(p=>{
+    const ci=catInfo(p.cat);const f=p.factor??CFG.factor;const d=p.doses[1]||p.doses[0];
+    const ex=iCalc(p.cpg,p.factor,d,30);
+    return `<tr>
+      <td><div style="font-weight:700">${p.ico||''} ${p.name}</div><div style="font-size:.7rem;color:var(--text3)">${p.desc.substring(0,50)}…</div></td>
+      <td><span class="badge" style="background:${ci.bg};color:${ci.color}">${ci.label}</span></td>
+      <td style="font-size:.78rem;color:var(--text3)">${p.unit}</td>
+      <td style="font-size:.75rem;color:var(--text3)">${p.doses.join(', ')}</td>
+      <td class="mono" style="font-size:.78rem">R$ ${p.cpg.toFixed(3).replace('.',',')}</td>
+      <td style="font-size:.78rem">${f}×</td>
+      <td class="mono" style="font-size:.75rem;color:var(--orange);">${fBRL(ex.price)}<span style="display:block;font-size:.63rem;color:var(--text3)">${d}${p.unit}×30un</span></td>
+      <td><span class="badge ${p.active?'badge-active':'badge-hidden'}">${p.active?'Ativo':'Oculto'}</span></td>
+      <td><div style="display:flex;gap:.3rem"><button class="btn btn-ghost btn-xs" onclick="editProd(${p.id})">Editar</button><button class="btn btn-red btn-xs" onclick="delProd(${p.id})">×</button></div></td>
+    </tr>`;
+  }).join('')+'</tbody>';
+}
+function openPF(){resetPF();openOv('ov-pf');}
+function resetPF(){
+  $('pf-id').value='';$('pf-title').textContent='Novo ativo';
+  ['pf-name','pf-desc','pf-doses','pf-cpg','pf-factor','pf-ico'].forEach(i=>$(i).value='');
+  $('pf-unit').value='mg';$('pf-active').value='1';$('pf-msg').innerHTML='';
+  $('pf-cat').innerHTML=CATS.map(c=>`<option value="${c.id}">${c.label}</option>`).join('');
+}
+function editProd(id){
+  const p=PRODS.find(x=>x.id===id);resetPF();
+  $('pf-id').value=p.id;$('pf-title').textContent='Editar ativo';
+  $('pf-name').value=p.name;$('pf-cat').value=p.cat;$('pf-unit').value=p.unit;
+  $('pf-desc').value=p.desc;$('pf-doses').value=p.doses.join(', ');
+  $('pf-cpg').value=p.cpg;$('pf-factor').value=p.factor||'';
+  $('pf-ico').value=p.ico||'';$('pf-active').value=p.active?'1':'0';
+  openOv('ov-pf');
+}
+function savePF(){
+  const name=$('pf-name').value.trim(),cat=$('pf-cat').value,unit=$('pf-unit').value.trim()||'mg',
+        desc=$('pf-desc').value.trim(),dosesRaw=$('pf-doses').value,
+        cpg=parseFloat($('pf-cpg').value),fRaw=$('pf-factor').value,
+        factor=fRaw?parseFloat(fRaw):null,active=$('pf-active').value==='1',
+        ico=$('pf-ico').value.trim()||'💊';
+  if(!name||!dosesRaw||isNaN(cpg)||cpg<=0){
+    $('pf-msg').innerHTML='<div class="lmsg le">Preencha nome, dosagens e custo/grama.</div>';return;}
+  const doses=dosesRaw.split(',').map(d=>parseFloat(d.trim())).filter(d=>!isNaN(d));
+  if(!doses.length){$('pf-msg').innerHTML='<div class="lmsg le">Informe ao menos uma dosagem.</div>';return;}
+  const eid=$('pf-id').value;
+  if(eid){const i=PRODS.findIndex(x=>x.id===parseInt(eid));PRODS[i]={...PRODS[i],name,cat,unit,desc,doses,cpg,factor,active,ico};}
+  else PRODS.push({id:PROD_SEQ++,name,cat,unit,desc,doses,cpg,factor,active,ico});
+  closeOv('ov-pf');renderAdmProds();toast(eid?'Ativo atualizado!':'Ativo criado!');
+}
+function delProd(id){
+  if(!confirm('Excluir este ativo?')) return;
+  PRODS.splice(PRODS.findIndex(x=>x.id===id),1);renderAdmProds();toast('Ativo excluído.');
+}
+
+// Categories
+function renderAdmCats(){
+  $('cat-tbl').innerHTML=`<thead><tr><th>ID</th><th>Rótulo</th><th>Ícone</th><th>Badge</th><th>Qtd. ativos</th><th></th></tr></thead><tbody>`+
+  CATS.map(c=>`<tr>
+    <td class="mono" style="font-size:.78rem">${c.id}</td>
+    <td style="font-weight:600">${c.label}</td>
+    <td style="font-size:1.1rem">${c.ico}</td>
+    <td><span class="badge" style="background:${c.bg};color:${c.color}">${c.label}</span></td>
+    <td>${PRODS.filter(p=>p.cat===c.id).length}</td>
+    <td><div style="display:flex;gap:.3rem"><button class="btn btn-ghost btn-xs" onclick="editCat('${c.id}')">Editar</button><button class="btn btn-red btn-xs" onclick="delCat('${c.id}')">×</button></div></td>
+  </tr>`).join('')+'</tbody>';
+}
+function openCF(){resetCF();openOv('ov-cf');}
+function resetCF(){
+  $('cf-eid').value='';$('cf-title').textContent='Nova categoria';
+  $('cf-id').value='';$('cf-id').disabled=false;
+  ['cf-label','cf-ico','cf-bg','cf-color'].forEach(i=>$(i).value='');$('cf-msg').innerHTML='';
+}
+function editCat(id){
+  const c=CATS.find(x=>x.id===id);resetCF();
+  $('cf-eid').value=c.id;$('cf-title').textContent='Editar categoria';
+  $('cf-id').value=c.id;$('cf-id').disabled=true;
+  $('cf-label').value=c.label;$('cf-ico').value=c.ico;$('cf-bg').value=c.bg;$('cf-color').value=c.color;
+  openOv('ov-cf');
+}
+function saveCF(){
+  const eid=$('cf-eid').value,cid=$('cf-id').value.trim().toLowerCase().replace(/\s+/g,'_');
+  const label=$('cf-label').value.trim(),ico=$('cf-ico').value.trim()||'💊',
+        bg=$('cf-bg').value.trim(),color=$('cf-color').value.trim();
+  if(!cid||!label||!bg||!color){$('cf-msg').innerHTML='<div class="lmsg le">Preencha todos os campos.</div>';return;}
+  if(!eid&&CATS.find(c=>c.id===cid)){$('cf-msg').innerHTML='<div class="lmsg le">ID já existe.</div>';return;}
+  if(eid){const i=CATS.findIndex(c=>c.id===eid);CATS[i]={id:eid,label,ico,bg,color};}
+  else CATS.push({id:cid,label,ico,bg,color});
+  $('cf-id').disabled=false;closeOv('ov-cf');renderAdmCats();toast('Categoria salva!');
+}
+function delCat(id){
+  if(PRODS.find(p=>p.cat===id)){toast('Mova ou exclua os ativos desta categoria primeiro.','err');return;}
+  if(!confirm('Excluir categoria?')) return;
+  CATS.splice(CATS.findIndex(c=>c.id===id),1);renderAdmCats();toast('Categoria excluída.');
+}
+
+// Partners
+function renderAdmPartners(){
+  $('partner-tbl').innerHTML=`<thead><tr><th>Farmácia</th><th>Cidade</th><th>Resp. Técnico</th><th>WhatsApp</th><th>Especialidades</th><th>Status</th><th></th></tr></thead><tbody>`+
+  PARTNERS.map(p=>`<tr>
+    <td style="font-weight:700">🏥 ${p.name}</td>
+    <td style="font-size:.8rem;color:var(--text3)">${p.city}</td>
+    <td style="font-size:.78rem">${p.rt}</td>
+    <td class="mono" style="font-size:.76rem">${p.wa}</td>
+    <td>${p.specs.map(s=>`<span class="badge badge-active" style="margin-right:.3rem">${s}</span>`).join('')}</td>
+    <td><span class="badge ${p.active?'badge-active':'badge-hidden'}">${p.active?'Ativa':'Inativa'}</span></td>
+    <td><div style="display:flex;gap:.3rem"><button class="btn btn-ghost btn-xs" onclick="editPartner(${p.id})">Editar</button><button class="btn btn-red btn-xs" onclick="delPartner(${p.id})">×</button></div></td>
+  </tr>`).join('')+'</tbody>';
+}
+function openPartnerF(){resetPartnerF();openOv('ov-partnerf');}
+function resetPartnerF(){
+  $('parf-id').value='';$('partnerf-title').textContent='Nova Farmácia Parceira';
+  ['parf-name','parf-city','parf-wa','parf-rt','parf-specs'].forEach(i=>$(i).value='');
+  $('parf-active').value='1';$('parf-msg').innerHTML='';
+  $('parf-user').innerHTML=USERS.filter(u=>u.role==='pharma').map(u=>`<option value="${u.username}">${u.name}</option>`).join('');
+}
+function editPartner(id){
+  const p=PARTNERS.find(x=>x.id===id);resetPartnerF();
+  $('parf-id').value=p.id;$('partnerf-title').textContent='Editar Parceira';
+  $('parf-name').value=p.name;$('parf-city').value=p.city;$('parf-wa').value=p.wa;
+  $('parf-rt').value=p.rt;$('parf-specs').value=p.specs.join(', ');
+  $('parf-user').value=p.user;$('parf-active').value=p.active?'1':'0';
+  openOv('ov-partnerf');
+}
+function savePartnerF(){
+  const name=$('parf-name').value.trim(),city=$('parf-city').value.trim(),
+        wa=$('parf-wa').value.trim(),rt=$('parf-rt').value.trim(),
+        user=$('parf-user').value,specsRaw=$('parf-specs').value,
+        active=$('parf-active').value==='1';
+  if(!name||!city||!wa||!rt){$('parf-msg').innerHTML='<div class="lmsg le">Preencha nome, cidade, WhatsApp e responsável.</div>';return;}
+  const specs=specsRaw.split(',').map(s=>s.trim()).filter(Boolean);
+  const eid=parseInt($('parf-id').value)||0;
+  if(eid){const i=PARTNERS.findIndex(x=>x.id===eid);PARTNERS[i]={...PARTNERS[i],name,city,wa,rt,user,specs,active};}
+  else PARTNERS.push({id:PARTNER_SEQ++,name,city,wa,rt,user,specs,active});
+  closeOv('ov-partnerf');renderAdmPartners();toast(eid?'Parceira atualizada!':'Parceira cadastrada!');
+}
+function delPartner(id){
+  if(!confirm('Remover esta parceira?')) return;
+  PARTNERS.splice(PARTNERS.findIndex(x=>x.id===id),1);renderAdmPartners();toast('Parceira removida.');
+}
+
+// Users
+function renderAdmUsers(){
+  $('usr-tbl').innerHTML=`<thead><tr><th>Nome</th><th>Usuário</th><th>WhatsApp</th><th>Perfil</th><th>Pedidos</th></tr></thead><tbody>`+
+  USERS.filter(u=>u.role!=='admin').map(u=>{
+    const n=ORDERS.filter(o=>o.clientUser===u.username).length;
+    return `<tr>
+      <td style="font-weight:600">${u.name}</td>
+      <td class="mono" style="font-size:.78rem">${u.username}</td>
+      <td style="font-size:.78rem;color:var(--text3)">${u.phone||'—'}</td>
+      <td><span class="badge ${u.role==='pharma'?'badge-pharma':'badge-client'}">${u.role==='pharma'?'Farmacêutico':'Cliente'}</span></td>
+      <td>${n}</td></tr>`;
+  }).join('')+'</tbody>';
+}
+
+// All Orders
+function renderAdmOrders(){
+  const el=$('adm-orders');
+  if(!ORDERS.length){el.innerHTML='<p class="muted" style="font-size:.85rem">Nenhum pedido.</p>';return;}
+  el.innerHTML=ORDERS.map(o=>`
+    <div class="ocard" style="display:grid;grid-template-columns:1fr auto;gap:.9rem;align-items:center">
+      <div>
+        <div style="display:flex;gap:.6rem;align-items:center;margin-bottom:.25rem">
+          <span class="mono" style="font-size:.73rem;color:var(--text3)">${o.id}</span>
+          <span class="ostatus ${sCls(o.status)}">${sLabel(o.status)}</span>
+        </div>
+        <div style="font-size:.98rem;font-weight:800">${o.formulaName}</div>
+        <div style="font-size:.75rem;color:var(--text3)">${o.clientName} · ${o.date} · ${o.caps} un. · ${o.partnerName}</div>
+        <div class="mono" style="font-size:.83rem;color:var(--orange);font-weight:700;margin-top:.15rem">${fBRL(o.total)}</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:.35rem">
+        <button class="btn btn-ghost btn-xs" onclick="openSummary('${o.id}')">📋 Resumo</button>
+        <button class="btn btn-ghost btn-xs" onclick="openWA('${o.id}')">📱 WhatsApp</button>
+      </div>
+    </div>`).join('');
+}
+
+// Settings
+function loadSettings(){
+  $('cfg-name').value=CFG.name;$('cfg-factor').value=CFG.factor;
+  $('cfg-cap').value=CFG.capCost;$('cfg-forms').value=CFG.forms.join('\n');$('cfg-wa').value=CFG.wa;
+}
+function saveSettings(){
+  CFG.name=$('cfg-name').value.trim()||CFG.name;
+  CFG.factor=parseFloat($('cfg-factor').value)||CFG.factor;
+  CFG.capCost=parseFloat($('cfg-cap').value)||0;
+  CFG.forms=$('cfg-forms').value.split('\n').map(s=>s.trim()).filter(Boolean);
+  CFG.wa=$('cfg-wa').value.trim();
+  toast('Configurações salvas!');
+}
+
+// Close overlays
+document.querySelectorAll('.overlay').forEach(el=>{
+  el.addEventListener('click',function(e){if(e.target===this)this.classList.remove('active');});
+});
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape') document.querySelectorAll('.overlay.active').forEach(m=>m.classList.remove('active'));
+});
+</script>
+</body>
+</html>

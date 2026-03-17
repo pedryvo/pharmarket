@@ -241,7 +241,7 @@ export function AdminContainer({ session, initialData }: AdminContainerProps) {
           name: validated.name,
           cpg: validated.cpg,
           categoryId: validated.categoryId,
-          partnerId: selectedPartnerId,
+          partnerId: validated.partnerId,
           unit: validated.unit
         });
       } else if (activeTab === 'categories') {
@@ -326,6 +326,7 @@ export function AdminContainer({ session, initialData }: AdminContainerProps) {
                 onClick={() => {
                    setNewValues({ 
                     categoryId: initialData.categories[0]?.id,
+                    partnerId: selectedPartnerId,
                     unit: 'mg'
                    });
                    setShowCreateModal(true);
